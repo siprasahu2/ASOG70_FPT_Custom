@@ -1,0 +1,80 @@
+package com.TP.ASOG70_FPT_Custom.CUSTOM_ASOG_RULES;
+import com.wisor.brms.asog.xpath.Occurence;
+import com.wisor.brms.asog.LengthCheck;
+import com.wisor.brms.asog.dao.ASOGTABLE;
+import com.wisor.brms.asog.DatatypeCheck;
+import com.wisor.brms.asog.Equals;
+import com.wisor.brms.asog.RangeOfValues;
+import com.wisor.brms.asog.Required;
+import com.wisor.brms.asog.TimeFormatCheck;
+import com.wisor.brms.asog.Populated;
+import com.wisor.brms.asog.DateFormatCheck;
+import com.wisor.brms.asog.Position;
+import com.wisor.brms.asog.Contains;
+import com.wisor.brms.asog.dao.SuplementOrderCheck;
+import com.wisor.brms.asog.SvcType;
+import com.wisor.brms.asog.DateCheck;
+import com.wisor.brms.asog.CapitalLetterCheck;
+import com.wisor.brms.asog.SpecialFormat;
+import com.wisor.brms.asog.engine.XpathLookup;
+import com.wisor.brms.asog.isValidValue;
+import com.wisor.brms.asog.ValidValueCheck;
+import com.wisor.brms.asog.IntervalDurationMatcher;
+import com.wisor.brms.asog.xpath.Prohibited;
+import com.wisor.brms.asog.SpaceCheck;
+import com.wisor.brms.asog.ReqTypeAct;
+import com.synchronoss.brms.dao.BrmsKeyValue;
+import com.wisor.brms.asog.CommaSeparatedSpace;
+import com.wisor.brms.asog.dao.HOLIDAY;
+import com.wisor.brms.asog.TNFormat;
+import com.wisor.brms.asog.ThoroughFareHelper;
+import com.wisor.brms.asog.DisplayMessage;
+import com.wisor.brms.asog.xpath.Unique;
+import java.util.Vector;
+import com.wisor.brms.logging.Logger;
+import java.util.ArrayList;
+import ilog.rules.xml.IlrXmlObject;
+import ilog.rules.factory.IlrReflect;
+import com.wisor.brms.ErrorCodeMsg;
+import ilog.rules.bom.IlrAttribute;
+import java.util.Iterator;
+import java.util.*;
+import com.wisor.brms.asog.CustSegementValidator;
+import ilog.rules.xml.binding.IlrXmlDefaultDataDriver;
+import java.io.StringWriter;
+import java.util.Collection;
+import java.util.List;
+import ilog.rules.bom.IlrClass;
+import ilog.rules.bom.dynamic.IlrDynamicClass;
+import java.util.Enumeration;
+import java.io.StringReader;
+import ilog.rules.xml.IlrXmlErrorException;
+import ilog.rules.xml.IlrXmlError;
+import com.wisor.common.brms.exception.BRMSValidationException;
+import ilog.rules.data.IlrError;
+import ilog.rules.xml.runtime.IlrXmlRtException;
+import com.wisor.brms.ErrorResponse;
+import com.synchronoss.ruleserver.core.xpath.XOMContainerBean;
+import com.synchronoss.ruleserver.core.xpath.XOMAccessBean;
+import java.util.*;
+rule "EV66A" dialect "mvel" ruleflow-group "CUSTOM_ASOG_RULES"
+enabled true
+
+when
+xcb object
+Evaluate 
+Start Brace
+the "//asr/uom_asr/LREF_MAPPING/BDW" is populated 
+AND
+ the "//ADMIN/ICSC" is_equal_to_values "EC20" 
+AND
+  
+Start Brace
+ the "//asr/uom_asr/LREF_MAPPING/BDW" is_not_equal_to_values "1.5M,1000M,100G,100M,10G,10M,150M,1G,1M,2.5G,200M,20G,20M,25G,2G,300M,30M,3G,3M,400M,40G,40M,45M,4G,500M,50G,50M,5G,5M,600M,60M,6G,700M,70M,7G,800M,80M,8G,900M,90M,9G" 
+End Brace
+ 
+End Brace
+
+then
+the error code "EV66A" the error message "BDW must be one of these values," for the field "/BDW"
+end

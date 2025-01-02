@@ -1,0 +1,76 @@
+package com.TP.ASOG70_FPT_Custom.CUSTOM_ASOG_RULES;
+import com.wisor.brms.asog.xpath.Occurence;
+import com.wisor.brms.asog.LengthCheck;
+import com.wisor.brms.asog.dao.ASOGTABLE;
+import com.wisor.brms.asog.DatatypeCheck;
+import com.wisor.brms.asog.Equals;
+import com.wisor.brms.asog.RangeOfValues;
+import com.wisor.brms.asog.Required;
+import com.wisor.brms.asog.TimeFormatCheck;
+import com.wisor.brms.asog.Populated;
+import com.wisor.brms.asog.DateFormatCheck;
+import com.wisor.brms.asog.Position;
+import com.wisor.brms.asog.Contains;
+import com.wisor.brms.asog.dao.SuplementOrderCheck;
+import com.wisor.brms.asog.SvcType;
+import com.wisor.brms.asog.DateCheck;
+import com.wisor.brms.asog.CapitalLetterCheck;
+import com.wisor.brms.asog.SpecialFormat;
+import com.wisor.brms.asog.engine.XpathLookup;
+import com.wisor.brms.asog.isValidValue;
+import com.wisor.brms.asog.ValidValueCheck;
+import com.wisor.brms.asog.IntervalDurationMatcher;
+import com.wisor.brms.asog.xpath.Prohibited;
+import com.wisor.brms.asog.SpaceCheck;
+import com.wisor.brms.asog.ReqTypeAct;
+import com.synchronoss.brms.dao.BrmsKeyValue;
+import com.wisor.brms.asog.CommaSeparatedSpace;
+import com.wisor.brms.asog.dao.HOLIDAY;
+import com.wisor.brms.asog.TNFormat;
+import com.wisor.brms.asog.ThoroughFareHelper;
+import com.wisor.brms.asog.DisplayMessage;
+import com.wisor.brms.asog.xpath.Unique;
+import java.util.Vector;
+import com.wisor.brms.logging.Logger;
+import java.util.ArrayList;
+import ilog.rules.xml.IlrXmlObject;
+import ilog.rules.factory.IlrReflect;
+import com.wisor.brms.ErrorCodeMsg;
+import ilog.rules.bom.IlrAttribute;
+import java.util.Iterator;
+import java.util.*;
+import com.wisor.brms.asog.CustSegementValidator;
+import ilog.rules.xml.binding.IlrXmlDefaultDataDriver;
+import java.io.StringWriter;
+import java.util.Collection;
+import java.util.List;
+import ilog.rules.bom.IlrClass;
+import ilog.rules.bom.dynamic.IlrDynamicClass;
+import java.util.Enumeration;
+import java.io.StringReader;
+import ilog.rules.xml.IlrXmlErrorException;
+import ilog.rules.xml.IlrXmlError;
+import com.wisor.common.brms.exception.BRMSValidationException;
+import ilog.rules.data.IlrError;
+import ilog.rules.xml.runtime.IlrXmlRtException;
+import com.wisor.brms.ErrorResponse;
+import com.synchronoss.ruleserver.core.xpath.XOMContainerBean;
+import com.synchronoss.ruleserver.core.xpath.XOMAccessBean;
+import java.util.*;
+rule "FPT067" dialect "mvel" ruleflow-group "CUSTOM_ASOG_RULES"
+enabled true
+
+when
+xcb object
+Evaluate 
+Start Brace
+the "//ADMIN/ICSC" is_equal_to_values "EC20,FP01" 
+AND
+ the "//TRANSPORT/GETO" is populated 
+AND
+ the "//TRANSPORT/GETO" is_equal_to_values "B,D,G,I" 
+End Brace
+
+then
+the error code "FPT067" the error message "Consolidated Wholesale NNE does not support B, D, G or I in the TRANSPORT.GETO field." for the field "/GETO/TRANSPORT"
+end

@@ -1,0 +1,4065 @@
+package com.TP.ASOG70_FPT_Custom;
+
+
+import com.wisor.brms.asog.xpath.Occurence;
+import com.wisor.brms.asog.LengthCheck;
+import com.wisor.brms.asog.dao.ASOGTABLE;
+import com.wisor.brms.asog.DatatypeCheck;
+import com.wisor.brms.asog.Equals;
+import com.wisor.brms.asog.RangeOfValues;
+import com.wisor.brms.asog.Required;
+import com.wisor.brms.asog.TimeFormatCheck;
+import com.wisor.brms.asog.Populated;
+import com.wisor.brms.asog.DateFormatCheck;
+import com.wisor.brms.asog.Position;
+import com.wisor.brms.asog.Contains;
+import com.wisor.brms.asog.dao.SuplementOrderCheck;
+import com.wisor.brms.asog.SvcType;
+import com.wisor.brms.asog.DateCheck;
+import com.wisor.brms.asog.CapitalLetterCheck;
+import com.wisor.brms.asog.SpecialFormat;
+import com.wisor.brms.asog.engine.XpathLookup;
+import com.wisor.brms.asog.isValidValue;
+import com.wisor.brms.asog.ValidValueCheck;
+import com.wisor.brms.asog.IntervalDurationMatcher;
+import com.wisor.brms.asog.xpath.Prohibited;
+import com.wisor.brms.asog.SpaceCheck;
+import com.wisor.brms.asog.ReqTypeAct;
+import com.synchronoss.brms.dao.BrmsKeyValue;
+import com.wisor.brms.asog.CommaSeparatedSpace;
+import com.wisor.brms.asog.dao.HOLIDAY;
+import com.wisor.brms.asog.TNFormat;
+import com.wisor.brms.asog.ThoroughFareHelper;
+import com.wisor.brms.asog.DisplayMessage;
+import com.wisor.brms.asog.xpath.Unique;
+import java.util.Vector;
+import com.wisor.brms.logging.Logger;
+import java.util.ArrayList;
+import ilog.rules.xml.IlrXmlObject;
+import ilog.rules.factory.IlrReflect;
+import com.wisor.brms.ErrorCodeMsg;
+import ilog.rules.bom.IlrAttribute;
+import java.util.Iterator;
+import java.util.*;
+import com.wisor.brms.asog.CustSegementValidator;
+import ilog.rules.xml.binding.IlrXmlDefaultDataDriver;
+import java.io.StringWriter;
+import java.util.Collection;
+import java.util.List;
+import ilog.rules.bom.IlrClass;
+import ilog.rules.bom.dynamic.IlrDynamicClass;
+import java.util.Enumeration;
+import java.io.StringReader;
+import ilog.rules.xml.IlrXmlErrorException;
+import ilog.rules.xml.IlrXmlError;
+import com.wisor.common.brms.exception.BRMSValidationException;
+import ilog.rules.data.IlrError;
+import ilog.rules.xml.runtime.IlrXmlRtException;
+import com.wisor.brms.ErrorResponse;
+import com.synchronoss.ruleserver.core.xpath.XOMContainerBean;
+import com.synchronoss.ruleserver.core.xpath.XOMAccessBean;
+import java.util.*;
+
+expander ASOG70_FPT_Custom.dsl
+function boolean ALCONfieldPopulated(com.wisor.brms.ErrorCodeMsg errorCodeMsg, ilog.rules.xml.IlrXmlObject eusa_priloc, ilog.rules.xml.IlrXmlObject eusa_secloc, java.lang.String errorCode)
+{
+Logger log = new Logger();
+log.error("Entering ALCONfieldPopulated method");
+IlrXmlObject salipri = (IlrXmlObject) new IlrReflect().get(eusa_priloc, eusa_priloc.getXOMClass().getAttribute("SALI"));
+IlrXmlObject salisec = (IlrXmlObject) new IlrReflect().get(eusa_secloc, eusa_secloc.getXOMClass().getAttribute("SALI"));
+if(salipri==null && salisec!=null){
+	return false;
+}
+else if(salipri!=null && salisec==null){
+	return false;
+}
+if(salipri==null && salisec==null){
+	return true;
+}
+String alconpri = (String) new IlrReflect().get(salipri, salipri.getXOMClass().getAttribute("ALCON"));
+log.error("alconpri="+alconpri);
+String alconsec = (String) new IlrReflect().get(salisec, salisec.getXOMClass().getAttribute("ALCON"));
+log.error("alconsec="+alconsec);
+com.wisor.brms.asog.Populated p1= new Populated();
+if(p1.isNotPopulated(alconpri) && p1.isNotPopulated(alconsec)){
+		log.error("inside if");
+		return true;
+}
+return false;
+}
+function boolean allOccurenceOfFieldEqualsValue(java.util.Vector coll, java.lang.String field, java.lang.String value, java.lang.String errorcode, com.wisor.brms.ErrorCodeMsg errorCodeMsg)
+{
+Logger log = new Logger();
+log.debug("entering allOccurenceOfFieldEqualsValue");
+
+if (coll == null) {
+	log.debug("exiting with false");
+	return false;
+}
+ArrayList arrList = new ArrayList();
+Iterator itr = coll.iterator();
+	while (itr.hasNext()) {
+    	arrList.add(itr.next());
+	}
+log.debug("arrList size:" + arrList.size());
+IlrXmlObject obj = null;
+int count = 0;
+    
+try {
+	if (arrList.size() != 0) {
+		for (int i = 0; i < arrList.size(); i++) {
+			obj = (IlrXmlObject) arrList.get(i);
+			Object ob = new IlrReflect().get(obj, obj.getXOMClass().getAttribute(field));
+			if (ob != null) {
+				if (ob.toString().equalsIgnoreCase(value)) {
+            	   	count++;
+				}
+			}
+		}
+		if (count == arrList.size()) {
+        	obj = (IlrXmlObject) arrList.get(0);
+        	log.debug("Inside the Xpath PAth condition");
+        	errorCodeMsg.errorCodeErrorMsg(errorcode, obj.getAbsoluteXPath(true)+ "/" + field);
+            //errorCode.setXpath(obj.getAbsoluteXPath(true));
+    		log.debug("exiting with true");
+            return true;
+		}
+		log.debug("exiting with false");
+        return false;
+	}
+	log.debug("exiting with false");
+	return false;
+}catch (Exception e) {
+	log.error("Error occurred allOccurenceOfFieldEqualsValue : " + e);
+	return false;
+}
+}
+function boolean allOccurenceOfFieldNotEqualsValue(java.lang.String errorcode, com.wisor.brms.ErrorCodeMsg errorCodeMsg, java.util.Vector coll, java.lang.String field, java.lang.String value)
+{
+Logger log = new Logger();
+log.debug("entering allOccurenceOfFieldNotEqualsValue");
+    	        if (coll == null) {
+    	        log.debug("exiting with false");
+    	            return false;
+    	        }
+    ArrayList arrList = new ArrayList();
+Iterator itr = coll.iterator();
+	while (itr.hasNext()) {
+    	arrList.add(itr.next());
+	}
+	log.debug("arrList size:" + arrList.size());
+IlrXmlObject obj = null;
+    	        
+    	        int count = 0;
+    
+    	        try {
+    	            if (arrList.size() != 0) {
+    	                for (int i = 0; i < arrList.size(); i++) {
+    	                    obj = (IlrXmlObject) arrList.get(i);
+    
+    	                    Object ob = new IlrReflect().get(obj, obj.getXOMClass().getAttribute(field));
+    
+    	                    if (ob == null) {
+    	                        //System.out.println("no tag");
+    	                        count++;
+    	                    }
+    
+    	                    if (ob != null) {
+    	                        if (ob.toString().length() == 0) {
+    	                            //System.out.println("no value");
+    	                            count++;
+    	                        }
+    	                    }
+    
+    	                    if ((ob != null) && (ob.toString().length() > 0)) {
+    	                        if (!ob.toString().equalsIgnoreCase(value)) {
+    	                            //System.out.println("incorrect value");
+    	                            count++;
+    	                        }
+    	                    }
+    	                }
+    
+    	                //System.out.println(count);
+    
+    	                if (count == arrList.size()) {
+    	                    obj = (IlrXmlObject) arrList.get(arrList.size() - 1);
+    	                    //errorcode.setXpath(obj.getAbsoluteXPath(true));
+    	                    errorCodeMsg.errorCodeErrorMsg(errorcode, obj.getAbsoluteXPath(true)+ "/" + field);
+    	                    log.debug("exiting with true");
+    
+    	                    return true;
+    	                }
+    			log.debug("exiting with false");
+    	                return false;
+    	            }
+    			log.debug("exiting with false");
+    	            return false;
+    	        } catch (Exception e) {
+    	            //System.out.println("exception");
+    	            log.error("Error occurred in allOccurenceOfFieldNotEqualsValue : " + e);
+    
+    	            return false;
+    	        }
+}
+function boolean anyARIPrilocAndPrilocSpotCheck(Vector coll, String priloc, String prilocspot)
+{
+Logger log = new Logger();
+        if (coll == null) {
+            return false;
+        }
+
+        ArrayList arrList = new ArrayList(); arrList.addAll(coll);
+        IlrXmlObject obj = null;
+        com.wisor.brms.asog.Position pos = new com.wisor.brms.asog.Position();
+        String s = null;
+
+        try {
+            if (arrList.size() != 0) {
+                for (int i = 0; i < arrList.size(); i++) {
+                    obj = (IlrXmlObject) arrList.get(i);
+
+                    Object locObj = new IlrReflect().get(obj, obj.getXOMClass().getAttribute(priloc));
+                    Object spotObj = new IlrReflect().get(obj, obj.getXOMClass().getAttribute(prilocspot));
+
+                    if (locObj != null) {
+                        s = locObj.toString();
+
+                        if (pos.positionOftagValueEqualToValue(1, s, "E") &&
+                                ((spotObj == null) || (spotObj.toString().length() == 0))) {
+                            return true;
+                        }
+                    }
+
+                    
+                }
+            }
+
+            return false;
+        } catch (Exception e) {
+            log.debug("Error occurred while generating the Root Xpath : " + e);
+
+            return false;
+        }
+}
+function boolean anyNAICKTcheckForCancelledUREF(java.util.Vector coll, java.lang.String section, java.lang.String field, java.lang.String value, com.wisor.brms.ErrorCodeMsg errorCode)
+{
+Logger log = new Logger();
+log.debug("entering anyNAICKTcheckForCancelledUREF");
+            if (coll == null) {
+            	log.debug("exiting with false");
+                return false;
+            }
+    
+              ArrayList arrList = new ArrayList(); arrList.addAll(coll);
+            IlrXmlObject obj = null;
+    
+            try {
+                if (arrList.size() != 0) {
+                    for (int i = 0; i < arrList.size(); i++) {
+                        obj = (IlrXmlObject) arrList.get(i);
+    
+                        Object ob = new IlrReflect().get(obj, obj.getXOMClass().getAttribute(field));
+    
+                        if (ob != null) {
+                            if (ob.toString().equalsIgnoreCase(value)) {
+                                Object ob1 = new IlrReflect().get(obj, obj.getXOMClass().getAttribute(section));
+    
+                                if (ob1 != null) {
+                                    errorCode.setXpath(obj.getAbsoluteXPath(true));
+                                    log.debug("exiting with true");
+    
+                                    return true;
+                                }
+                            }
+                        }
+                    }
+                }
+                log.debug("exiting with false");
+    
+                return false;
+            } catch (Exception e) {
+                log.error("Error occurred in anyNAICKTcheckForCancelledUREF : " + e);
+    
+                return false;
+            }
+}
+function boolean anyOccurenceIsNotPopulated(java.util.Vector coll, java.lang.String tag, java.lang.String errorcode, com.wisor.brms.ErrorCodeMsg errorCodeMsg)
+{
+Logger log = new Logger();
+log.debug("entering anyOccurenceIsNotPopulated");
+            if (coll == null) {
+            	log.debug("exiting with false");
+                return false;
+            }
+          ArrayList arrList = new ArrayList(); arrList.addAll(coll);
+Iterator itr = coll.iterator();
+	while (itr.hasNext()) {
+    	arrList.add(itr.next());
+	}
+	log.debug("arrList size:" + arrList.size());
+
+    
+             
+            IlrXmlObject obj = null;
+    
+            try {
+                if (arrList.size() != 0) {
+                    for (int i = 0; i < arrList.size(); i++) {
+                        obj = (IlrXmlObject) arrList.get(i);
+    
+                        Object ob = new IlrReflect().get(obj, obj.getXOMClass().getAttribute(tag));
+    
+                        if (ob == null) {
+                          errorCodeMsg.errorCodeErrorMsg(errorcode, obj.getAbsoluteXPath(true)+ "/" + tag);
+    				log.debug("exiting with true");
+                            return true;
+                        }
+    
+                        if (ob != null) {
+                            if (ob.toString().length() == 0) {
+								errorCodeMsg.errorCodeErrorMsg(errorcode, obj.getAbsoluteXPath(true)+ "/" + tag);
+                                log.debug("exiting with true");
+                                return true;
+                            }
+                        }
+                    }
+                }
+    		log.debug("exiting with false");
+                return false;
+            } catch (Exception e) {
+               log.error("Error occurred  anyOccurenceIsNotPopulated: " + e);
+    
+                return false;
+            }
+}
+function boolean anyOccurenceOfFieldNotPopulatedAndAssosiatedTagEqualsValuesAndCorrespondingTagEqualsValues(java.util.Vector coll, java.lang.String field, java.lang.String assTag, java.lang.String assValues, java.lang.String corrTag, java.lang.String corrValues, com.wisor.brms.ErrorCodeMsg errorCode)
+{
+Logger log = new Logger();
+log.debug("entering anyOccurenceOfFieldNotPopulatedAndAssosiatedTagEqualsValuesAndCorrespondingTagEqualsValues");
+            if (coll == null) {
+             log.debug("exiting with false");
+                return false;
+            }
+    
+              ArrayList arrList = new ArrayList(); arrList.addAll(coll);
+            IlrXmlObject obj = null;
+           com.wisor.brms.asog.Equals equals = new com.wisor.brms.asog.Equals();
+    
+            try {
+                if (arrList.size() != 0) {
+                    for (int i = 0; i < arrList.size(); i++) {
+                        obj = (IlrXmlObject) arrList.get(i);
+    
+                        Object fieldObj = new IlrReflect().get(obj, obj.getXOMClass().getAttribute(field));
+                        Object assTagObj = new IlrReflect().get(obj, obj.getXOMClass().getAttribute(assTag));
+                        Object corrTagObj = new IlrReflect().get(obj, obj.getXOMClass().getAttribute(corrTag));
+    
+                        if ((fieldObj == null) || (fieldObj.toString().length() == 0)) {
+                            if ((assTagObj != null) && (corrTagObj != null)) {
+                                if (equals.isEqualToValues(assTagObj.toString(), assValues) &&
+                                        equals.isEqualToValues(corrTagObj.toString(), corrValues)) {
+                                    errorCode.setXpath(obj.getAbsoluteXPath(true));
+                                    log.debug("exiting with true");
+    
+                                    return true;
+                                }
+                            }
+                        }
+                    }
+                }
+    		log.debug("exiting with false");
+                return false;
+            } catch (Exception e) {
+                log.error("Error occurred in anyOccurenceOfFieldNotPopulatedAndAssosiatedTagEqualsValuesAndCorrespondingTagEqualsValues : " + e);
+    
+                return false;
+            }
+}
+function boolean anyOccurenceOfFieldPopulatedAndAssosiatedTagNotEqualsValues(Vector coll, String field, String assosTag, String values, ErrorCodeMsg errorCode)
+{
+Logger log = new Logger();
+        if (coll == null) {
+            return false;
+        }
+
+        ArrayList arrList =  new ArrayList(); arrList.addAll(coll);
+        IlrXmlObject obj = null;
+        com.wisor.brms.asog.Equals equals = new com.wisor.brms.asog.Equals();
+        int count = 0;
+
+        try {
+            if (arrList.size() != 0) {
+                for (int i = 0; i < arrList.size(); i++) {
+                    obj = (IlrXmlObject) arrList.get(i);
+
+                    Object fieldObj = new IlrReflect().get(obj, obj.getXOMClass().getAttribute(field));
+                    Object tagObj = new IlrReflect().get(obj, obj.getXOMClass().getAttribute(assosTag));
+
+                    if (fieldObj != null) {
+                        if (fieldObj.toString().length() >= 1) {
+                            if (tagObj == null) {
+                                errorCode.setXpath(obj.getAbsoluteXPath(true));
+
+                                return true;
+                            } else if (tagObj != null) {
+                                if (equals.isNotEqualToValues(tagObj.toString(), values)) {
+                                    errorCode.setXpath(obj.getAbsoluteXPath(true));
+
+                                    return true;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            return false;
+        } catch (Exception e) {
+            log.debug("Error occurred while generating the Root Xpath : " + e);
+
+            return false;
+        }
+}
+function boolean anyOccurenceOfSaliTagEqualsValue(Vector coll, String section, String tag, String value, ErrorCodeMsg errorCode)
+{
+Logger log = new Logger();
+        if (coll == null) {
+            return false;
+        }
+
+        ArrayList arrList =  new ArrayList(); arrList.addAll(coll);
+        IlrXmlObject objSect = null;
+        ArrayList saliList = new ArrayList();
+        ArrayList tagList = new ArrayList();
+        int count = 0;
+
+        try {
+            if (arrList.size() != 0) {
+                objSect = (IlrXmlObject) arrList.get(0);
+                errorCode.setXpath(objSect.getAbsoluteXPath(true) + "/" + section);
+
+                for (int i = 0; i < arrList.size(); i++) {
+                    objSect = (IlrXmlObject) arrList.get(i);
+
+                    IlrXmlObject saliObj = (IlrXmlObject) new IlrReflect().get(objSect,
+                            objSect.getXOMClass().getAttribute(section));
+
+                    if (saliObj != null) {
+                        Object tagObj = new IlrReflect().get(saliObj, saliObj.getXOMClass().getAttribute(tag));
+
+                        if (tagObj != null) {
+                            if (tagObj.toString().equalsIgnoreCase(value)) {
+                                count++;
+                            }
+                        }
+                    }
+                }
+
+                if (count > 0) {
+                    return true;
+                }
+
+                return false;
+            }
+
+            return false;
+        } catch (Exception e) {
+            log.debug("Error occurred while generating the Root Xpath : " + e);
+
+            return false;
+        }
+}
+function boolean anyOccurenceOfServPrefPopulated(java.util.Vector coll, java.lang.String section)
+{
+Logger log = new Logger();
+log.debug("entering anyOccurenceOfServPrefPopulated");
+            if (coll == null) {
+            log.debug("exiting with false");
+                return false;
+            }
+    
+              ArrayList arrList = new ArrayList(); arrList.addAll(coll);
+            IlrXmlObject objSect = null;
+    
+            try {
+                if (arrList.size() != 0) {
+                    for (int i = 0; i < arrList.size(); i++) {
+                        objSect = (IlrXmlObject) arrList.get(i);
+    
+                        IlrXmlObject subSect = (IlrXmlObject) new IlrReflect().get(objSect,
+                                objSect.getXOMClass().getAttribute(section));
+    
+                        if (subSect != null) {
+                            ilog.rules.bom.IlrClass clas = subSect.getXOMClass();
+                            Iterator itr = clas.allAttributes();
+    
+                            while (itr.hasNext()) {
+                                ilog.rules.bom.IlrAttribute attObj = (ilog.rules.bom.IlrAttribute) itr.next();
+    
+                                if (attObj != null) {
+                                    String attName = attObj.getName();
+    
+                                    if (!attName.startsWith("UNKNOWN_POSITIVE_VALUE") && !attName.startsWith("NIL_VALUE")) {
+                                        Object tagObj = new IlrReflect().get(subSect,
+                                                subSect.getXOMClass().getAttribute(attName));
+    
+                                        if (tagObj != null) {
+                                            if (tagObj.toString().length() >= 1) {
+                                            log.debug("exiting with true");
+                                                return true;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    log.debug("exiting with false");
+                    return false;
+                    
+                }
+            } catch (Exception e) {
+                log.error("Error occurred in anyOccurenceOfServPrefPopulated : " + e);
+    
+                return false;
+            }
+    	log.debug("exiting with false");
+            return false;
+}
+function boolean anyOccurenceWithTag1NotpopulatedAndTag2Populated(java.util.Vector section, java.lang.String tagname, java.lang.String tagname1, java.lang.String errorCode, com.wisor.brms.ErrorCodeMsg errorCodeMsg)
+{
+if (section == null) {
+            return false;
+        }
+
+        ArrayList arrList = new ArrayList(); arrList.addAll(section);
+        IlrXmlObject obj = null;
+
+        try {
+            if (arrList.size() != 0) {
+                for (int i = 0; i < arrList.size(); i++) {
+                    obj = (IlrXmlObject) arrList.get(i);
+
+                    Object ob = new IlrReflect().get(obj,
+                            obj.getXOMClass().getAttribute(tagname));
+
+                    if ((ob == null) || (ob.toString().length() < 1)) {
+                        Object ob1 = new IlrReflect().get(obj,
+                                obj.getXOMClass().getAttribute(tagname1));
+
+                        if ((ob1 != null) && (ob1.toString().length() >= 1)) {
+                            errorCodeMsg.errorCodeErrorMsg(errorCode,
+                                obj.getAbsoluteXPath(true) + "/" + tagname1);
+                        }
+                    }
+                }
+            }
+
+            return false;
+        } catch (Exception e) {
+            e.printStackTrace();
+
+            return false;
+        }
+}
+function boolean canopiWebService(ilog.rules.xml.IlrXmlObject coll, com.wisor.brms.ErrorCodeMsg errorCodeMsg)
+{
+try
+{	
+	String pon = null;
+	String icsc = null;
+	String errorCode = null;
+	String errorMsg = null;
+	ArrayList arrListSeg = new ArrayList();
+	com.wisor.brms.asog.CustSegementValidator custSegVal = new com.wisor.brms.asog.CustSegementValidator();
+	
+	IlrXmlObject asrObject = (IlrXmlObject) new IlrReflect().get(coll,coll.getXOMClass().getAttribute("ASR"));
+		
+	IlrXmlObject adminObject = (IlrXmlObject) new IlrReflect().get(asrObject ,asrObject.getXOMClass().getAttribute("ADMIN"));
+	
+	pon = (String) new IlrReflect().get(adminObject,adminObject.getXOMClass().getAttribute("PON"));
+	icsc = (String) new IlrReflect().get(adminObject,adminObject.getXOMClass().getAttribute("ICSC"));
+	
+	IlrXmlObject customformObject = (IlrXmlObject) new IlrReflect().get(coll,coll.getXOMClass().getAttribute("CUSTOM_FORM"));
+
+	IlrXmlObject segmentObject = (IlrXmlObject) new IlrReflect().get(customformObject ,customformObject.getXOMClass().getAttribute("SEGMENT"));
+
+	Object seg_name = new IlrReflect().get(segmentObject, segmentObject.getXOMClass().getAttribute("SEGMENT_NAMEList"));
+
+	if(seg_name != null)
+	{
+		Vector vec = (Vector) seg_name;
+		arrListSeg.addAll(vec);
+	}
+	custSegVal.validateCustSegment(pon,icsc, arrListSeg);
+	ArrayList result = (ArrayList) custSegVal.validateCustSegment(pon, icsc, arrListSeg);
+	if(result.get(0).equals("ALLgoodSEGMENTS"))
+	{
+		return false;
+    }
+    else if(result.get(0).equals("EXCEPTIONcwn01"))
+	{
+		errorMsg = "UNABLE TO VALIDATE SEGMENT - PLEASE TRY AGAIN LATER";
+		errorCodeMsg.setCodeIlogErrorMessageXpath("CWN01",errorMsg,segmentObject.getAbsoluteXPath(true)+"/segment_name");
+		return true;
+    }
+    else if(result.get(0).equals("CW002segments"))
+    {
+    	errorMsg = "THE FOLLOWING SEGMENTS ARE INVALID : "+result.get(1);
+    	errorCodeMsg.setCodeIlogErrorMessageXpath("CW002",errorMsg,segmentObject.getAbsoluteXPath(true)+"/segment_name");
+		return true;
+    }
+    else
+    {
+    	errorCode = (String) result.get(0);
+    	errorMsg = (String) result.get(1);
+    	errorCodeMsg.setCodeIlogErrorMessageXpath(errorCode,errorMsg,segmentObject.getAbsoluteXPath(true)+"/segment_name");
+		return true;
+    }
+}
+catch(Exception e)
+{
+	return false; 
+}
+
+}
+function void createModifiedXml()
+{
+String tagName = "ASR_SERVICE_REQUEST";
+        int startindex = xmlInstance.indexOf("<" + tagName);
+       int endIndex = xmlInstance.indexOf(">", startindex);
+        int finalEndIndex = endIndex + 1;
+
+        if ((startindex != -1) && (endIndex != -1)) {
+            String rootTag = xmlInstance.substring(startindex, finalEndIndex);
+            String finalRootTag = "<" + tagName + ">";
+            rootTag = rootTag.replace('\\','/');
+            modifiedXml = xmlInstance.replaceFirst(rootTag, finalRootTag);
+        }
+}
+function void enrichXML()
+{
+IlrXmlDefaultDataDriver dataDriver = new IlrXmlDefaultDataDriver(reflect);
+
+     StringWriter writer = new StringWriter();
+      if(object != null)
+     {
+     dataDriver.writeObject(object, writer);
+    String enrichedXML = writer.getBuffer().toString(); 
+enrichedXML = enrichedXML.replaceAll("ns0:", "");
+
+
+}
+}
+function boolean fieldEqualsValues(java.util.Vector coll, java.lang.String tag, java.lang.String values, com.wisor.brms.ErrorCodeMsg errorCode)
+{
+Logger log = new Logger();
+       com.wisor.brms.asog.Equals eq = new com.wisor.brms.asog.Equals();
+
+        if (coll == null) {
+            return false;
+        }
+
+          ArrayList arrList = new ArrayList(); arrList.addAll(coll);
+        IlrXmlObject obj = null;
+
+        try {
+            if (arrList.size() != 0) {
+                for (int i = 0; i < arrList.size(); i++) {
+                    obj = (IlrXmlObject) arrList.get(i);
+
+                    Object ob = new IlrReflect().get(obj,
+                            obj.getXOMClass().getAttribute(tag));
+
+                    if (ob != null) {
+                        if ((ob.toString().length() >= 1) &&
+                                eq.isEqualToValues(ob.toString(), values)) {
+                            errorCode.errorCodeErrorMsg("VC18",obj.getAbsoluteXPath(true)+"/"+"DIR");
+                        }
+                    }
+                }
+            }
+
+            return false;
+        } catch (Exception e) {
+            log.debug("Error occurred while generating the Root Xpath : " + e);
+
+            return false;
+        }
+}
+function boolean fieldIsNotConsecutivelyAssignedAcrossOccurrences(java.util.Vector coll, java.lang.String tag, java.lang.String val, java.lang.String errorcode, com.wisor.brms.ErrorCodeMsg errorCodeMsg)
+{
+Logger log = new Logger();
+log.debug("entering fieldIsNotConsecutivelyAssignedAcrossOccurrences()");
+if (coll == null) {
+	log.debug("exiting with false, coll null");
+    	return false;
+}
+
+log.debug("Before ArrayList Initialization:");
+ArrayList arrList = new ArrayList();
+Iterator itr = coll.iterator();
+
+log.debug("Vector Size:" + coll.size());
+
+while (itr.hasNext()) {
+	arrList.add(itr.next());
+}
+log.debug("arrList size:" + arrList.size());
+IlrXmlObject obj = null;
+
+if (val == null) {
+	log.debug("exiting with false ,val is null");
+    	return false;
+}
+    
+log.debug("String value :" + val);
+int value = Integer.parseInt(val);
+log.debug("value:->" + value);
+try {
+		com.wisor.brms.asog.DatatypeCheck dataOb = new com.wisor.brms.asog.DatatypeCheck();
+		log.debug("After Datatype Check initialization:");
+    
+            if (arrList == null) {
+            log.debug("exiting with false,arrList is null");
+                return false;
+            }
+    		log.debug("DataObject" + dataOb);
+            if (arrList.size() == 0) {
+            log.debug("exiting with false");
+                return false;
+            }
+    
+              for (int i = 0; i < arrList.size(); i++) {
+                    obj = (IlrXmlObject) arrList.get(i);
+    				log.debug("IlrXML Object" + obj.getXOMClass());
+                    Object ob = new IlrReflect().get(obj, obj.getXOMClass().getAttribute(tag));
+                    log.debug("Object:" + ob);
+    
+                    if (ob == null) {
+                    log.debug("exiting with false");
+                        return false;
+                    }
+    
+                    String s = ob.toString();
+    				log.debug("String s" + s);
+                    if (!dataOb.checkNumeric(s)) {
+                        //errorCodeMsg.setXpath(obj.getAbsoluteXPath(true));
+                        errorCodeMsg.errorCodeErrorMsg(errorcode, obj.getAbsoluteXPath(true)+ "/" + tag);
+    			log.debug("exiting with true");
+                        return true;
+                    }
+    
+                    int tagValue = Integer.parseInt(s);
+                    log.debug("TagValue:" + tagValue);
+                    log.debug("value here:" + value);
+                   // log.debug("ErrorCode" + errorcode);
+                    if (tagValue != value) {
+                      //errorCodeMsg.setXpath(obj.getAbsoluteXPath(true));
+                       errorCodeMsg.errorCodeErrorMsg(errorcode, obj.getAbsoluteXPath(true)+ "/" + tag);
+    			log.debug("exiting with true");
+                        return true;
+                    }
+                    value++;
+                }
+            log.debug("exiting with false");
+                return false;
+            } catch (Exception e) {
+                log.error("Error occurred in fieldIsNotConsecutivelyAssignedAcrossOccurrences : " + e.printStackTrace());
+                return false;
+            }
+   
+}
+function boolean fieldIsPopulated(java.util.Vector coll, java.lang.String tag, java.lang.String errorcode, com.wisor.brms.ErrorCodeMsg errorCodeMsg)
+{
+Logger log = new Logger();
+log.debug("entering fieldIsPopulated");
+
+if (coll == null) {
+	log.debug("exiting with false");
+	return false;
+}
+ArrayList arrList = new ArrayList();
+Iterator itr = coll.iterator();
+	while (itr.hasNext()) {
+    	arrList.add(itr.next());
+	}
+	log.debug("arrList size:" + arrList.size());
+IlrXmlObject obj = null;
+
+    
+            try {
+                if (arrList.size() != 0) {
+                    for (int i = 0; i < arrList.size(); i++) {
+                        obj = (IlrXmlObject) arrList.get(i);
+    
+                        Object ob = new IlrReflect().get(obj, obj.getXOMClass().getAttribute(tag));
+    
+                        if (ob != null) {
+                            if (ob.toString().length() >= 1) {
+                               errorCodeMsg.errorCodeErrorMsg(errorcode, obj.getAbsoluteXPath(true)+ "/" + tag);
+    				log.debug("exiting with true");
+                                return true;
+                            }
+                        }
+                    }
+                }
+         log.debug("exiting with false");
+                return false;
+            } catch (Exception e) {
+                log.error("Error occurred fieldIsPopulated : " + e);
+    
+                return false;
+            }
+    
+}
+function void finalresult(java.util.Collection xmlResponse)
+{
+Collection reponse = (Collection)xmlResponse;
+	System.out.println(reponse);
+}
+function java.lang.Object getAttributeObject(ilog.rules.xml.IlrXmlObject aIlrXmlObject, java.lang.String attributeName)
+{
+Object obj = null;
+
+			try
+			{
+					if( aIlrXmlObject != null && attributeName != null)
+{
+if(reflect == null)
+{
+ 	reflect = context.getRuleset().reflect;         
+}							
+obj = reflect.get(aIlrXmlObject,aIlrXmlObject.getXOMClass().getAttribute(attributeName));
+}
+}
+
+			catch(IllegalAccessException e)
+			{
+			        e.printStackTrace();
+        	}
+
+			return obj;
+}
+function boolean getSaliParent(java.lang.String section, java.lang.String field1, java.lang.String field2, ilog.rules.factory.IlrReflect reflect, ilog.rules.engine.IlrContext context)
+{
+Logger log = new Logger();
+log.debug("entering notPopulated");
+  if(reflect == null)
+     {
+   reflect = context.getRuleset().reflect; 
+      }
+        ArrayList list1 = reflect.getDynamicClasses();
+       List lis=null;
+        IlrXmlObject objs = null;
+        IlrClass clas1 = null;
+        IlrClass clas2 = null;
+   String field = null;
+        try {
+            for (int i = 0; i < list1.size(); i++) {
+                IlrDynamicClass ob = (IlrDynamicClass) list1.get(i);
+                   if (ob.getName().equalsIgnoreCase(section)) {
+                    clas1=(IlrClass)ob;            
+                   break;
+                  
+                }
+            }
+ Object [] obs=context.getObjects(clas1);
+              for (int i = 0; i < obs.length; i++) {
+          
+
+IlrXmlObject xmlOb=(IlrXmlObject)obs[i];
+Object secObj = new IlrReflect().get(xmlOb, xmlOb.getXOMClass().getAttribute(field1));
+
+IlrXmlObject subSect=(IlrXmlObject)secObj;
+if (subSect == null) {
+                    return true;
+                } 
+//System.out.println("class type is:"+secObj.getClass().getName());
+Object tagObj = new IlrReflect().get(subSect, subSect.getXOMClass().getAttribute(field2));
+  if (tagObj == null) {
+                    return true;
+                } else if (tagObj.toString().equalsIgnoreCase("")) {
+                    return true;
+                }
+            
+}
+return false;
+    } catch (Exception e) {
+           
+
+            return false;
+        }
+}
+function ArrayList getvalue(java.util.Vector coll)
+{
+Logger log = new Logger();
+        log.debug("entering getvalue");
+        ArrayList arrList = new ArrayList();
+
+        if (coll == null) {
+         log.debug("exiting with null value");
+            return null;
+        }
+
+        Iterator itr = coll.iterator();
+
+        while (itr.hasNext()) {
+            arrList.add(itr.next());
+        }
+         log.debug("exiting with arrList values");
+
+        return arrList;
+}
+function java.lang.String getXPathForClassName(ilog.rules.engine.IlrRuleInstance ruleInstance, java.lang.String className)
+{
+String xpathWithPosition = className;
+        Object[] objs = ruleInstance.objects;
+  
+        boolean found = false;
+
+        for (int n = 0; n < objs.length; n++) {
+            Object obj = objs[n];
+//System.out.println(obj.getClass().getName());
+
+            if (obj instanceof IlrXmlObject) {
+                IlrXmlObject xmlObj = (IlrXmlObject) obj;
+//System.out.println(xmlObj.getAbsoluteXPath(true));
+                if (hasMatchingName(xmlObj, className)) {
+                    xpathWithPosition = xmlObj.getAbsoluteXPath(true);
+                    found = true;
+
+                    break;
+                }
+            } else if (obj instanceof IlrDefaultCollector) {
+                IlrDefaultCollector defaultCollector = (IlrDefaultCollector) obj;
+                Enumeration anEnumeration = defaultCollector.elements();
+
+                while (anEnumeration.hasMoreElements()) {
+                    IlrXmlObject xmlObj = (IlrXmlObject) anEnumeration.nextElement();
+
+                    if (hasMatchingName(xmlObj, className)) {
+                        xpathWithPosition = xmlObj.getAbsoluteXPath(true);
+                        found = true;
+
+                        break;
+                    }
+                }
+            }
+        }
+
+        return xpathWithPosition;        
+}
+function String getXpathWithoutInstance(java.lang.String childTag, java.lang.String parentTag)
+{
+return parentTag+childTag;
+}
+function boolean hasMatchingName(ilog.rules.xml.IlrXmlObject xmlObj, java.lang.String className)
+{
+String xpath = xmlObj.getAbsoluteXPath(false);
+        int idx = xpath.lastIndexOf("/");
+
+        if ((idx != -1) && (idx < (xpath.length() - 1))) {
+            return xpath.substring(idx + 1).equalsIgnoreCase(className);
+        }
+
+        return false;
+}
+function boolean hasMatchingXPath(ilog.rules.xml.IlrXmlObject xmlObj, java.lang.String xpath)
+{
+return xmlObj.getAbsoluteXPath(false).equalsIgnoreCase(xpath);
+
+}
+function int helperRoutingMatrixCheck(ilog.rules.xml.IlrXmlObject obj, java.lang.String section, java.lang.String ANI)
+{
+Logger log = new Logger();
+log.debug("entering helperRoutingMatrixCheck");
+            int count = 0;
+    
+            try {
+                Object aniObj = new IlrReflect().get(obj, obj.getXOMClass().getAttribute(ANI));
+    
+                if (aniObj != null) {
+                    if (aniObj.toString().length() >= 1) {
+                        count++;
+                    }
+                }
+    
+                IlrXmlObject subSect = (IlrXmlObject) new IlrReflect().get(obj, obj.getXOMClass().getAttribute(section));
+    
+                if (subSect != null) {
+                    ilog.rules.bom.IlrClass clas = subSect.getXOMClass();
+                    Iterator itr = clas.allAttributes();
+    
+                    while (itr.hasNext()) {
+                        ilog.rules.bom.IlrAttribute attObj = (ilog.rules.bom.IlrAttribute) itr.next();
+    
+                        if (attObj != null) {
+                            String attName = attObj.getName();
+    
+                            if (!attName.startsWith("UNKNOWN_POSITIVE_VALUE") && !attName.startsWith("NIL_VALUE")) {
+                                Object tagObj = new IlrReflect().get(subSect, subSect.getXOMClass().getAttribute(attName));
+    
+                                if (tagObj != null) {
+                                    if (tagObj.toString().length() >= 1) {
+                                        count++;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+    
+                return count;
+            } catch (Exception e) {
+  log.error("Exception in helperRoutingMatrixCheck :"+e);
+                return 0;
+            }
+}
+function int helperRoutingMatrixCheck1(ilog.rules.xml.IlrXmlObject obj, java.lang.String section)
+{
+Logger log = new Logger();
+log.debug("entering helperRoutingMatrixCheck1");
+            int count = 0;
+    
+            try {
+                IlrXmlObject subSect = (IlrXmlObject) new IlrReflect().get(obj, obj.getXOMClass().getAttribute(section));
+    
+                if (subSect != null) {
+                    ilog.rules.bom.IlrClass clas = subSect.getXOMClass();
+                    Iterator itr = clas.allAttributes();
+    
+                    while (itr.hasNext()) {
+                        ilog.rules.bom.IlrAttribute attObj = (ilog.rules.bom.IlrAttribute) itr.next();
+    
+                        if (attObj != null) {
+                            String attName = attObj.getName();
+    
+                            if (!attName.startsWith("UNKNOWN_POSITIVE_VALUE") && !attName.startsWith("NIL_VALUE")) {
+                                Object tagObj = new IlrReflect().get(subSect, subSect.getXOMClass().getAttribute(attName));
+    
+                                if (tagObj != null) {
+                                    if (tagObj.toString().length() >= 1) {
+                                        count++;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+    
+                return count;
+            } catch (Exception e) {
+log.error("exception in helperRoutingMatrixCheck1 :"+e);
+                return 0;
+            }
+}
+function boolean isIntervalDurationMatchingForNc(ilog.rules.xml.IlrXmlObject transSvc, java.lang.String form, com.wisor.brms.ErrorCodeMsg errorCodeMsg)
+{
+try
+	{
+		String date = null;
+		String errorMsg = null;
+		String ncValue = null;
+		String dddValue = null;
+		String icsc = "NL01";
+		
+		com.wisor.brms.asog.IntervalDurationMatcher interval = new com.wisor.brms.asog.IntervalDurationMatcher();
+		com.wisor.brms.asog.DateCheck dc = new com.wisor.brms.asog.DateCheck();
+
+		IlrXmlObject asrObject = (IlrXmlObject) new IlrReflect().get(transSvc,transSvc.getXOMClass().getAttribute("ASR"));
+		
+		IlrXmlObject adminObject = (IlrXmlObject) new IlrReflect().get(asrObject ,asrObject.getXOMClass().getAttribute("ADMIN"));
+		
+		dddValue = (String) new IlrReflect().get(adminObject,adminObject.getXOMClass().getAttribute("DDD"));
+
+		IlrXmlObject formObject = (IlrXmlObject) new IlrReflect().get(transSvc,transSvc.getXOMClass().getAttribute(form));
+		
+		if(form.equalsIgnoreCase("TRANSPORT"))
+		{
+			ncValue = (String) new IlrReflect().get(formObject,formObject.getXOMClass().getAttribute("NC"));
+		}
+		else if(form.equalsIgnoreCase("EUSA"))
+		{
+			IlrXmlObject eusaSvcDetailsObject = (IlrXmlObject) new IlrReflect().get(formObject,formObject.getXOMClass().getAttribute("EUSA_SVC_DETAILS"));
+			ncValue = (String) new IlrReflect().get(eusaSvcDetailsObject,eusaSvcDetailsObject.getXOMClass().getAttribute("NC"));
+		}
+		else if(form.equalsIgnoreCase("FGA"))
+		{
+			IlrXmlObject fgaSvcDetailsObject = (IlrXmlObject) new IlrReflect().get(formObject,formObject.getXOMClass().getAttribute("FGA_SVC_DETAILS"));
+			ncValue = (String) new IlrReflect().get(fgaSvcDetailsObject,fgaSvcDetailsObject.getXOMClass().getAttribute("NC"));
+		}
+		else if(form.equalsIgnoreCase("TRUNKING"))
+		{
+			IlrXmlObject trunkSvcDetailsObject = (IlrXmlObject) new IlrReflect().get(formObject,formObject.getXOMClass().getAttribute("TRUNK_SVC_DETAILS"));
+			ncValue = (String) new IlrReflect().get(trunkSvcDetailsObject,trunkSvcDetailsObject.getXOMClass().getAttribute("NC"));
+		}
+		else if(form.equalsIgnoreCase("RING"))
+		{
+			IlrXmlObject ringSvcDetailsObject = (IlrXmlObject) new IlrReflect().get(formObject,formObject.getXOMClass().getAttribute("RING_SVC_DETAILS"));
+			ncValue = (String) new IlrReflect().get(ringSvcDetailsObject,ringSvcDetailsObject.getXOMClass().getAttribute("NC"));
+		}
+		else if(form.equalsIgnoreCase("WAL"))
+		{
+			ncValue = (String) new IlrReflect().get(formObject,formObject.getXOMClass().getAttribute("NC"));
+		}
+		
+		date = interval.isIntervalDurationMatching(ncValue,dddValue,icsc);
+
+		if(!date.equals("Invalid_DATA"))
+		{
+			errorMsg = "The Due Date you requested is less than our Standard Interval. XO will be unable to accommodate this request before "+date;
+			errorCodeMsg.setXpath(adminObject.getAbsoluteXPath(true)+"/ddd");
+			errorCodeMsg.setMessage(errorMsg);
+			return true;
+		}
+	}
+	catch(Exception e)
+	{
+		return false; 
+	}
+	return false;
+}
+function boolean isUnique(Vector coll, String tag, ErrorCodeMsg errorCode)
+{
+Logger log = new Logger();
+            if (coll == null) {
+                return false;
+            }
+    
+            ArrayList arrList =  new ArrayList(); arrList.addAll(coll);
+            IlrXmlObject obj = null;
+            ArrayList arrList1 = new ArrayList();
+    
+            try {
+                if (arrList.size() != 0) {
+                    for (int i = 0; i < arrList.size(); i++) {
+                        obj = (IlrXmlObject) arrList.get(i);
+    
+                        Object ob = new IlrReflect().get(obj, obj.getXOMClass().getAttribute(tag));
+    
+                        if (ob != null) {
+                            if (ob.toString().length() != 0) {
+                                arrList1.add(ob);
+                            }
+                        }
+                    }
+    
+                    if (arrList1.size() >= 2) {
+                        for (int i = 0; i < (arrList1.size() - 1); i++) {
+                            for (int j = i + 1; j < arrList1.size(); j++) {
+                                if (arrList1.get(i).toString().equalsIgnoreCase(arrList1.get(j).toString())) {
+                                    obj = (IlrXmlObject) arrList.get(j);
+                                    errorCode.setXpath(obj.getAbsoluteXPath(true));
+    
+                                    return true;
+                                }
+                            }
+                        }
+                    }
+                }
+    
+                return false;
+            } catch (Exception e) {
+                //log.debug("Error occurred while generating the Root Xpath : " + e);
+    
+                return false;
+            }
+}
+function boolean keyValueCombination(java.lang.String field1, java.lang.String field2, java.lang.String values, java.lang.String kvcomb)
+{
+Logger log = new Logger();
+log.debug("Entering Function set keyValueCombination");
+if(field1 == "" || field1==null || field2=="" || field2 == null || values=="" ||  values==null || kvcomb=="" || kvcomb==null)
+{
+	log.debug("Null or no values");
+	return false;
+}
+
+Equals ob= new Equals();
+BrmsKeyValue ob1=new BrmsKeyValue();
+if(ob.isEqualToValues(field1,values))
+{
+	String tmp=field1+"#"+field2;
+	return ob1.isInvalidCombination(tmp,kvcomb);
+}
+return false;
+}
+function void loadXMLDataFile(java.lang.String xmlInstance)
+{
+try
+ {
+	IlrReflect reflect = context.getRuleset().reflect;
+    IlrXmlDefaultDataDriver dataDriver = new IlrXmlDefaultDataDriver(reflect);
+	IlrXmlObject object = dataDriver.readObject(new StringReader(xmlInstance));
+	dataDriver.assertObjects(object,context,null);
+ }
+ catch ( Exception e ){
+  if(e instanceof IlrXmlErrorException){
+   IlrXmlErrorException schemaException = (IlrXmlErrorException)e;
+   IlrXmlError[] errors = schemaException.getErrors();
+   BRMSValidationException[] brmsArray = new BRMSValidationException[errors.length];
+    for(int i=0;i<errors.length;i++)
+   {
+    BRMSValidationException aBRMSValidationException = new BRMSValidationException();
+    aBRMSValidationException.XPath=errors[i].XPath;
+    aBRMSValidationException.type=errors[i].type;
+    String source = errors[i].source;
+    
+  
+   // System.out.println("source "+errors[i].source);
+   // System.out.println("Type "+errors[i].type);
+    //System.out.println("Type "+errors[i].XPath);
+    String message = ((IlrError)(errors[i])).message;
+    //System.out.println("message "+message);
+    
+      if(source == null)
+    {
+    	source = message + errors[i].XPath;
+    }
+    if(e instanceof IlrXmlRtException)
+    {
+    	IlrXmlRtException excep = (IlrXmlRtException)e;
+    	excep.printStackTrace();
+    }
+    
+    aBRMSValidationException.message=errors[i].source;
+    brmsArray[i]=aBRMSValidationException;
+    ErrorResponse resp = new ErrorResponse(errors[i].type,source);
+    xmlResponse.add(resp);
+    
+   }
+  // xmlResponse.add(brmsArray);
+     } else{
+   e.printStackTrace();
+  }
+ }
+  
+}
+function boolean lrefListFieldIsNotPopulatedAssoTagIsPopulatedandCorrespondingTagEqualsVlaue(Vector coll, String subsect, String field, String assoTag, String corrTag, String values, ErrorCodeMsg errorCode)
+{
+Logger log = new Logger();
+        if (coll == null) {
+            return false;
+        }
+
+        ArrayList arrList =  new ArrayList(); arrList.addAll(coll);
+        IlrXmlObject obj = null;
+        com.wisor.brms.asog.Equals equals = new com.wisor.brms.asog.Equals();
+
+        try {
+            if (arrList.size() != 0) {
+                for (int i = 0; i < arrList.size(); i++) {
+                    boolean flag = false;
+                    obj = (IlrXmlObject) arrList.get(i);
+
+                    Object ob = new IlrReflect().get(obj, obj.getXOMClass().getAttribute(subsect));
+                    Object corrOb = new IlrReflect().get(obj, obj.getXOMClass().getAttribute(corrTag));
+
+                    if (corrOb != null) {
+                        if (equals.isEqualToValues(corrOb.toString(), values)) {
+                            flag = true;
+                        }
+                    }
+
+                    if ((ob != null) && (flag == true)) {
+                        Vector vect1 = (Vector) ob;
+                        ArrayList arrList1 = new ArrayList(); arrList.addAll(vect1);
+
+                        if (arrList1.size() != 0) {
+                            for (int j = 0; j < arrList1.size(); j++) {
+                                IlrXmlObject sectObj = (IlrXmlObject) arrList1.get(j);
+                                Object fieldObj = new IlrReflect().get(sectObj,
+                                        sectObj.getXOMClass().getAttribute(field));
+                                Object tagObj = new IlrReflect().get(sectObj,
+                                        sectObj.getXOMClass().getAttribute(assoTag));
+
+                                if (tagObj != null) {
+                                    if ((fieldObj == null) && (tagObj.toString().length() >= 1)) {
+                                        errorCode.setXpath(sectObj.getAbsoluteXPath(true));
+
+                                        return true;
+                                    }
+
+                                    if ((fieldObj != null) && (tagObj.toString().length() >= 1)) {
+                                        if (fieldObj.toString().length() == 0) {
+                                            errorCode.setXpath(sectObj.getAbsoluteXPath(true));
+
+                                            return true;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            return false;
+        } catch (Exception e) {
+            log.debug("Error occurred while generating the Root Xpath : " + e);
+
+            return false;
+        }
+}
+function boolean lrefListFieldPopulatedAssoTagIsNotPopulatedOrCorrespondingTagNotEqualsVlaues(Vector coll, String subsect, String field, String assoTag, String corrTag, String values, ErrorCodeMsg errorCode)
+{
+Logger log = new Logger();
+        if (coll == null) {
+            return false;
+        }
+
+        ArrayList arrList = new ArrayList(); arrList.addAll(coll);
+        IlrXmlObject obj = null;
+        com.wisor.brms.asog.Equals equals = new com.wisor.brms.asog.Equals();
+
+        try {
+            if (arrList.size() != 0) {
+                for (int i = 0; i < arrList.size(); i++) {
+                    boolean flag = false;
+                    obj = (IlrXmlObject) arrList.get(i);
+
+                    Object ob = new IlrReflect().get(obj, obj.getXOMClass().getAttribute(subsect));
+                    Object corrOb = new IlrReflect().get(obj, obj.getXOMClass().getAttribute(corrTag));
+
+                    if (corrOb != null) {
+                        if (equals.isNotEqualToValues(corrOb.toString(), values)) {
+                            flag = true;
+                        }
+                    } else if (corrOb == null) {
+                        flag = true;
+                    }
+
+                    if (ob != null) {
+                        Vector vect1 = (Vector) ob;
+                        ArrayList arrList1 = new ArrayList(); arrList.addAll(vect1);
+
+                        if (arrList1.size() != 0) {
+                            for (int j = 0; j < arrList1.size(); j++) {
+                                IlrXmlObject sectObj = (IlrXmlObject) arrList1.get(j);
+                                Object fieldObj = new IlrReflect().get(sectObj,
+                                        sectObj.getXOMClass().getAttribute(field));
+                                Object tagObj = new IlrReflect().get(sectObj,
+                                        sectObj.getXOMClass().getAttribute(assoTag));
+
+                                if ((fieldObj != null) && (flag == true)) {
+                                    if (fieldObj.toString().length() >= 1) {
+                                        errorCode.setXpath(sectObj.getAbsoluteXPath(true));
+
+                                        return true;
+                                    }
+                                }
+
+                                if ((fieldObj != null) && (tagObj == null)) {
+                                    if (fieldObj.toString().length() >= 1) {
+                                        errorCode.setXpath(sectObj.getAbsoluteXPath(true));
+
+                                        return true;
+                                    }
+                                }
+
+                                if ((fieldObj != null) && (tagObj != null)) {
+                                    if ((fieldObj.toString().length() >= 1) && (tagObj.toString().length() == 0)) {
+                                        errorCode.setXpath(sectObj.getAbsoluteXPath(true));
+
+                                        return true;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            return false;
+        } catch (Exception e) {
+            log.debug("Error occurred while generating the Root Xpath : " + e);
+
+            return false;
+        }
+}
+function boolean lrefProhibitedWhenUactNotEqualsCNK(java.util.Vector coll, java.lang.String errorCode, com.wisor.brms.ErrorCodeMsg errorCodeMsg)
+{
+Logger log = new Logger();
+log.error("Entering lrefProhibitedWhenUactNotEqualsCNK");
+			if (coll == null) 
+			{
+				log.error("Exiting with false");
+                return false;
+            }
+    
+            ArrayList arrList = new ArrayList(); arrList.addAll(coll);
+            ArrayList arrListSub = new ArrayList();
+            IlrXmlObject objSect = null;
+			log.error("Befor Try");
+            try 
+			{
+                if (arrList.size() != 0) 
+				{
+                    for (int i = 0; i < arrList.size(); i++) 
+					{
+                        boolean flag = false;
+    
+                        objSect = (IlrXmlObject) arrList.get(i);
+    
+                        String uact = (String) new IlrReflect().get(objSect, objSect.getXOMClass().getAttribute("UACT"));
+						log.error("UACT is " +uact);
+						
+						if(uact == null || (!uact.equalsIgnoreCase("C") && !uact.equalsIgnoreCase("N") && !uact.equalsIgnoreCase("K")))
+						{
+							flag = true;
+							log.error("Flag is true now");
+						}
+						
+						Object ob = new IlrReflect().get(objSect, objSect.getXOMClass().getAttribute("LREF_MAPPINGList"));
+						
+						if(ob != null)
+						{
+							log.error("Entered if vect != null");
+							Vector vect = (Vector) ob;
+							arrListSub.addAll(vect); 
+							IlrXmlObject objSubSect = null;
+							if (arrListSub.size() != 0) 
+							{
+								for (int j = 0; j < arrListSub.size(); j++) 
+								{
+									log.error("Entered for loop");
+									objSubSect = (IlrXmlObject) arrListSub.get(i);
+									String lref = (String) new IlrReflect().get(objSubSect, objSubSect.getXOMClass().getAttribute("LREF"));
+									log.error("lref " +lref);
+									if(lref != null && flag == true)
+									{
+										log.error("Finally here");
+										errorCodeMsg.errorCodeErrorMsg( errorCode, objSubSect.getAbsoluteXPath(true)+ "/LREF" );
+										break;
+									}
+								}
+							}
+						}
+						else
+						{
+							log.error("Ob itself null");
+						}
+                    }
+                }
+            } 
+			catch (Exception e) 
+			{
+                log.error("Error occurred in lrefProhibitedWhenUactNotEqualsCNK : " +e);
+				log.error("Exception occured in lrefProhibitedWhenUactNotEqualsCNK" +e);
+                return false;
+            }
+return false;
+}
+function boolean noneOccurenceEqualsValue(java.util.Vector coll, java.lang.String section, java.lang.String tag, java.lang.String value, com.wisor.brms.ErrorCodeMsg errorCode)
+{
+Logger log = new Logger();
+log.debug("entering noneOccurenceEqualsValue");
+            if (coll == null) {
+            log.debug("exiting with false");
+                return false;
+            }
+    
+              ArrayList arrList = new ArrayList(); arrList.addAll(coll);
+            IlrXmlObject objSect = null;
+            ArrayList saliList = new ArrayList();
+            ArrayList tagList = new ArrayList();
+            int count = 0;
+    
+            try {
+                if (arrList.size() != 0) {
+                    objSect = (IlrXmlObject) arrList.get(0);
+                    errorCode.setXpath(objSect.getAbsoluteXPath(true) + "/" + section);
+    
+                    for (int i = 0; i < arrList.size(); i++) {
+                        objSect = (IlrXmlObject) arrList.get(i);
+    
+                        IlrXmlObject saliObj = (IlrXmlObject) new IlrReflect().get(objSect,
+                                objSect.getXOMClass().getAttribute(section));
+    
+                        if (saliObj != null) {
+                            Object tagObj = new IlrReflect().get(saliObj, saliObj.getXOMClass().getAttribute(tag));
+    
+                            if (tagObj != null) {
+                                if (tagObj.toString().equalsIgnoreCase(value)) {
+                                    count++;
+                                }
+                            }
+                        }
+                    }
+    
+                    if (count == 0) {
+                    log.debug("exiting with true");
+                        return true;
+                    }
+                  	log.debug("exiting with false");
+                    return false;
+                }
+                	log.debug("exiting with false");
+                return false;
+            } catch (Exception e) {
+                log.error("Error occurred noneOccurenceEqualsValue : " + e);
+    
+                return false;
+            }
+}
+function boolean noOccurenceIsPopulated(java.util.Vector coll, java.lang.String field)
+{
+Logger log = new Logger();
+log.debug("entering noOccurenceIsPopulated");
+
+if (coll == null) {
+	log.debug("exiting with false");
+	return false;
+}
+ArrayList arrList = new ArrayList();
+Iterator itr = coll.iterator();
+	while (itr.hasNext()) {
+    	arrList.add(itr.next());
+	}
+	log.debug("arrList size:" + arrList.size());
+IlrXmlObject obj = null;
+           // ArrayList arrList = getvalue(coll);
+            //IlrXmlObject obj = null;
+            int count = 0;
+    
+            try {
+                if (arrList.size() != 0) {
+                    for (int i = 0; i < arrList.size(); i++) {
+                        obj = (IlrXmlObject) arrList.get(i);
+    
+                        Object ob = new IlrReflect().get(obj, obj.getXOMClass().getAttribute(field));
+    
+                        if (ob != null) {
+                            if (ob.toString().length() >= 1) {
+                                count++;
+                            }
+                        }
+                    }
+    
+                    if (count == 0) {
+                        obj = (IlrXmlObject) arrList.get(0);
+                       // errorCode.setXpath(obj.getAbsoluteXPath(true));
+                       //errorCodeMsg.errorCodeErrorMsg(errorcode, obj.getAbsoluteXPath(true)+ "/" + field);
+    			log.debug("exiting with true");
+                        return true;
+                    }
+                }
+    		log.debug("exiting with false");
+                return false;
+            } catch (Exception e) {
+                log.error("Error occurred noOccurenceIsPopulated : " + e);
+    
+                return false;
+            }
+    
+    
+}
+function boolean notPopulated(java.lang.String section, java.lang.String tag, com.wisor.brms.ErrorCodeMsg errorCode, ilog.rules.factory.IlrReflect reflect, ilog.rules.engine.IlrContext context)
+{
+Logger log = new Logger();
+log.debug("entering notPopulated");
+  if(reflect == null)
+     {
+   reflect = context.getRuleset().reflect;
+      }
+        ArrayList list1 = reflect.getDynamicClasses();
+
+        IlrXmlObject objs = null;
+        IlrClass clas1 = null;
+
+        try {
+            for (int i = 0; i < list1.size(); i++) {
+                IlrDynamicClass ob = (IlrDynamicClass) list1.get(i);
+
+                if (ob.getName().equalsIgnoreCase(section)) {
+                    clas1 = (IlrClass) ob;
+
+                    //System.out.println("Enter for " + ob.getName());
+                }
+            }
+
+            Object[] obs = context.getObjects(clas1);
+
+            for (int i = 0; i < obs.length; i++) {
+                objs = (IlrXmlObject) obs[i];
+
+                Object tagObject = reflect.get(objs, objs.getXOMClass().getAttribute(tag));
+
+                if (tagObject == null) {
+                    return true;
+                } else if (tagObject.toString().equalsIgnoreCase("")) {
+                    return true;
+                }
+            }
+
+            return false;
+        } catch (Exception e) {
+            log.error("exception in notPopulated :"+e);
+
+            return false;
+        }
+}
+function boolean occOfF1nF2andVAL1nVAL2withinsameUNIMAPPING(java.util.Vector coll, java.lang.String errorCode, java.lang.String field1, java.lang.String f1Values, java.lang.String field2, java.lang.String f2Values, java.lang.String field3, com.wisor.brms.ErrorCodeMsg errorCodeMsg)
+{
+Logger log = new Logger();
+int count = 0;
+log.error("Entering occurenceofF1nF2andVAL1nVAL2");
+			if (coll == null) 
+			{
+				log.error("Exiting with false");
+                return false;
+            }
+    
+            ArrayList arrList = new ArrayList(); arrList.addAll(coll);
+            ArrayList arrListSub;
+            IlrXmlObject objSect = null;
+			log.error("Befor Try");
+			log.error("size of uni_mapping"+arrList.size());
+            try 
+			{
+                if (arrList.size() != 0) 
+				{
+                    for (int i = 0; i < arrList.size(); i++) 
+					{
+                     	
+                        boolean flag = false;
+    
+                        objSect = (IlrXmlObject) arrList.get(i);
+    
+                        String  vpn_act= (String) new IlrReflect().get(objSect, objSect.getXOMClass().getAttribute(field1));
+                        String uact= (String) new IlrReflect().get(objSect, objSect.getXOMClass().getAttribute(field2));
+						log.error("field1="+ vpn_act);
+						log.error("field2="+ uact);
+						com.wisor.brms.asog.Equals p1= new Equals();						
+						if(uact != null && vpn_act !=null )
+						{
+							boolean b1=p1.isEqualToValues(vpn_act,f1Values);
+							boolean b2=p1.isEqualToValues(uact,f2Values);
+								if(b1&&b2){
+									errorCodeMsg.errorCodeErrorMsg( errorCode, objSect.getAbsoluteXPath(true)+ "/"+field3 );
+									count++;
+							}
+						}
+                    }
+                }
+            } 
+			catch (Exception e) 
+			{
+                log.error("Error occurred in occOfF1nF2andVAL1nVAL2withinsameUNIMAPPING : " +e);
+                return false;
+            }
+            if(count>=1){
+            	log.error("COUNT :"+count);
+            	return true;
+            }
+            	
+return false;
+}
+function boolean occOfF1POPnF2NOTPOPwithinsameUNIMAPPING(java.util.Vector coll, java.lang.String errorCode, java.lang.String field1, java.lang.String field2, java.lang.String field3, com.wisor.brms.ErrorCodeMsg errorCodeMsg)
+{
+Logger log = new Logger();
+int count = 0;
+log.error("Entering occurenceofF1POPandF2NOTPOP");
+			if (coll == null) 
+			{
+				log.error("Exiting with false");
+                return false;
+            }
+    
+            ArrayList arrList = new ArrayList(); arrList.addAll(coll);
+            ArrayList arrListSub;
+            IlrXmlObject objSect = null;
+			log.error("Befor Try");
+			log.error("size of uni_mapping"+arrList.size());
+            try 
+			{
+                if (arrList.size() != 0) 
+				{
+                    for (int i = 0; i < arrList.size(); i++) 
+					{
+                     	
+                        boolean flag = false;
+    
+                        objSect = (IlrXmlObject) arrList.get(i);
+    
+                        String f1 = (String) new IlrReflect().get(objSect, objSect.getXOMClass().getAttribute(field1));
+                        String  f2= (String) new IlrReflect().get(objSect, objSect.getXOMClass().getAttribute(field2));
+						log.error("field2="+ f2);
+						log.error("field1="+ f1);
+						com.wisor.brms.asog.Populated p1= new Populated();						
+						if(f2 != null && f1 !=null )
+						{
+							boolean b1=p1.isNotPopulated(f1);
+							boolean b2=p1.isPopulated(f2);
+								if(b1&&b2){
+									errorCodeMsg.errorCodeErrorMsg( errorCode, objSect.getAbsoluteXPath(true)+ "/"+field3 );
+									count++;
+							}
+						}
+						else if(f1==null && f2 != null){
+							errorCodeMsg.errorCodeErrorMsg( errorCode, objSect.getAbsoluteXPath(true)+ "/"+field3 );
+							count++;
+						}
+                    }
+                }
+            } 
+			catch (Exception e) 
+			{
+                log.error("Error occurred in occOfF1POPnF2NOTPOPwithinsameUNIMAPPING : " +e);
+                return false;
+            }
+            if(count>=1){
+            	log.error("COUNT :"+count);
+            	return true;
+            }
+            	
+return false;
+}
+function boolean occOfOTCnEVMPIDwithinsameUNIMAPPING(java.util.Vector coll, java.lang.String errorCode, com.wisor.brms.ErrorCodeMsg errorCodeMsg)
+{
+Logger log = new Logger();
+int count = 0;
+log.error("Entering occurenceofOTCandEVMPID");
+			if (coll == null) 
+			{
+				log.error("Exiting with false");
+                return false;
+            }
+    
+            ArrayList arrList = new ArrayList(); arrList.addAll(coll);
+            ArrayList arrListSub;
+            IlrXmlObject objSect = null;
+			log.error("Befor Try");
+			log.error("size of uni_mapping"+arrList.size());
+            try 
+			{
+                if (arrList.size() != 0) 
+				{
+                    for (int i = 0; i < arrList.size(); i++) 
+					{
+                     	
+                        boolean flag = false;
+    
+                        objSect = (IlrXmlObject) arrList.get(i);
+    
+                        String evcmpid = (String) new IlrReflect().get(objSect, objSect.getXOMClass().getAttribute("EVCMPID"));
+                        String otc = (String) new IlrReflect().get(objSect, objSect.getXOMClass().getAttribute("OTC"));
+						log.error("EVCMPID="+ evcmpid);
+						log.error("OTC="+ otc);
+						com.wisor.brms.asog.Populated p1= new Populated();						
+						if(evcmpid != null && otc !=null )
+						{
+							boolean b1=p1.isNotPopulated(otc);
+							boolean b2=p1.isPopulated(evcmpid);
+								if(b1&&b2){
+									errorCodeMsg.errorCodeErrorMsg( errorCode, objSect.getAbsoluteXPath(true)+ "/OTC" );
+									count++;
+							}
+						}
+						else if(otc==null && evcmpid != null){
+							errorCodeMsg.errorCodeErrorMsg( errorCode, objSect.getAbsoluteXPath(true)+ "/OTC" );
+							count++;
+						}
+                    }
+                }
+            } 
+			catch (Exception e) 
+			{
+                log.error("Error occurred in occOfOTCnEVCMPIDwithinsameUNIMAPPING : " +e);
+                return false;
+            }
+            if(count>=1){
+            	log.error("COUNT :"+count);
+            	return true;
+            }
+            	
+return false;
+}
+function boolean occurenceofEIandUACTinUNIMAPPING(java.lang.String errorCode, com.wisor.brms.ErrorCodeMsg errorCodeMsg, java.util.Vector coll)
+{
+				  	Logger log = new Logger();
+  				  	int count = 0;
+  					
+  					log.error("Entering occurenceofEIandUACT in UNIMAPPING");
+  					
+  					if (coll == null) 
+  					{
+  						log.error("Exiting with false");
+                  		return false;
+              		}
+      
+              		ArrayList arrList = new ArrayList(); 
+              		arrList.addAll(coll);
+              		ArrayList arrListSub;
+              		IlrXmlObject objSect = null;
+              		
+  					log.error("Befor Try");	 
+					log.error("size of uni_mapping"+arrList.size());
+					
+              		try 
+  					{
+                  		if (arrList.size() != 0) 
+  						{
+                      		for (int i = 0; i < arrList.size(); i++) 
+  							{
+                       	
+                          		boolean flag = false;
+      
+                          		objSect = (IlrXmlObject) arrList.get(i);
+      
+                          		String uact = (String) new IlrReflect().get(objSect, objSect.getXOMClass().getAttribute("UACT"));
+                          		String ei = (String) new IlrReflect().get(objSect, objSect.getXOMClass().getAttribute("EI"));  						
+								
+								log.error("UACT is " +uact);   
+								log.error("EI is " +ei);	
+
+								com.wisor.brms.asog.Populated p1= new Populated(); 
+								com.wisor.brms.asog.Equals e1=new Equals();
+								if(uact != null && ei!=null)
+  								{	  
+									boolean b1=p1.isPopulated(ei);	
+									boolean b2 = e1.isNotEquals(uact,"N");
+									boolean b3 = e1.isNotEquals(uact,"C");
+									
+									log.error("b1="+b1+"b2="+b2+"b3="+b3);
+									
+									if( b1 )	 
+									{
+  										if(b2 && b3)
+										{   errorCodeMsg.errorCodeErrorMsg( errorCode, objSect.getAbsoluteXPath(true)+ "/EI" );
+										    count++;
+											
+										}
+  									}	
+								}
+                      		}
+                  		}
+              		} 
+  					catch (Exception e) 
+  					{
+                  		log.error("Error occurred in occOfEInUACTwithinsameUNIMAPPING : " +e);
+  				
+                  		return false;
+             		 }
+              		if(count>=1){
+              			log.error("COUNT :"+count);
+              			return true;
+             		 }
+              	
+ 					return false;
+}
+function boolean occurenceofSvlanMapping(java.util.Vector coll, java.lang.String feild, java.lang.String compvalue, java.lang.String innercompvalue, java.lang.String innerfeild, java.lang.String errorCode, com.wisor.brms.ErrorCodeMsg errorCodeMsg)
+{
+Logger log = new Logger();
+int count = 0;
+log.error("Entering occurenceofSvlanMapping");
+			if (coll == null) 
+			{
+				log.error("Exiting with false");
+                return false;
+            }
+    
+            ArrayList arrList = new ArrayList(); arrList.addAll(coll);
+            ArrayList arrListSub;
+            IlrXmlObject objSect = null;
+			log.error("Befor Try");
+            try 
+			{
+                if (arrList.size() != 0) 
+				{
+                    for (int i = 0; i < arrList.size(); i++) 
+					{
+                     	boolean flagi=false;
+                        boolean flag = false;
+    
+                        objSect = (IlrXmlObject) arrList.get(i);
+    					//log.error("obj="+objSect);
+                        String unifeild = (String) new IlrReflect().get(objSect, objSect.getXOMClass().getAttribute(feild));
+						log.error("UACT is " +unifeild);
+						
+						if(unifeild != null && (unifeild.equalsIgnoreCase(compvalue)))
+						{
+							flag = true;
+							log.error("Flag is true now");
+						}
+						
+						Object ob = new IlrReflect().get(objSect, objSect.getXOMClass().getAttribute("SVLAN_MAPPINGList"));
+						
+						if(ob != null)
+						{
+							log.error("Entered if vect != null");
+							Vector vect = (Vector) ob;
+							arrListSub = new ArrayList();
+							arrListSub.addAll(vect); 
+							IlrXmlObject objSubSect = null;
+							if (arrListSub.size()!=0) 
+							{		int count_svact=0;						
+									boolean innercompvalueFlag = false;
+									for(int j=0;j<arrListSub.size();j++){				
+									
+										objSubSect = (IlrXmlObject) arrListSub.get(j);
+										String s_vact = (String) new IlrReflect().get(objSubSect, objSubSect.getXOMClass().getAttribute("S_VACT"));
+										log.error("vact " +s_vact);
+										if(s_vact!=null )
+											count_svact++;
+										if(s_vact!=null && s_vact.equalsIgnoreCase(innercompvalue))
+											innercompvalueFlag = true;
+										
+								log.error("loop"+j);
+									}
+									if(flag && count_svact>1 && innercompvalueFlag){
+											if(innerfeild=="S_VLAN_START")
+											errorCodeMsg.errorCodeErrorMsg( errorCode, objSubSect.getAbsoluteXPath(true)+ "/S_VLAN/S_VLAN_START" );
+											else if(innerfeild=="S_VACT"){
+												errorCodeMsg.errorCodeErrorMsg( errorCode, objSubSect.getAbsoluteXPath(true)+ "/S_VACT" );
+											}
+									}
+							}
+						}
+						else
+						{
+							log.error("Ob itself null");
+						}
+                    }
+                }
+            } 
+			catch (Exception e) 
+			{
+                log.error("Error occurred in occurenceofSvlanMapping : " +e);
+                return false;
+            }
+           if(count>=1){
+            	log.error("COUNT :"+count);
+            	return true;
+            }
+            	
+return false;
+}
+function boolean occurenceofSvlanMappingfortwoocc(java.util.Vector coll, java.lang.String errorCode, com.wisor.brms.ErrorCodeMsg errorCodeMsg)
+{
+Logger log = new Logger();
+int count = 0;
+boolean flag2=false;
+log.error("Entering occurenceofSvlanMappingfor two occurence of SVALN");
+			if (coll == null) 
+			{
+				log.error("Exiting with false");
+                return false;
+            }
+    
+            ArrayList arrList = new ArrayList(); arrList.addAll(coll);
+            ArrayList arrListSub;
+            IlrXmlObject objSect = null;
+			log.error("Befor Try");
+            try {
+            	 if (arrList.size() != 0) 
+				{
+					for (int i = 0; i < arrList.size(); i++) 
+					{
+						log.error("UNI_MAPPING loop"+i);
+						boolean flag = false;
+    					
+                        objSect = (IlrXmlObject) arrList.get(i);
+                        String unifeild = (String) new IlrReflect().get(objSect, objSect.getXOMClass().getAttribute("UACT"));
+						log.error("UACT is " +unifeild);
+						if(unifeild != null && (unifeild.equalsIgnoreCase("C")))
+						{
+							flag = true;
+							log.error("Flag is true now");
+						}
+						Object ob = new IlrReflect().get(objSect, objSect.getXOMClass().getAttribute("SVLAN_MAPPINGList"));
+						if(ob != null){
+							log.error("Entered if vect != null");
+							Vector vect = (Vector) ob;
+							arrListSub = new ArrayList();
+							arrListSub.addAll(vect); 
+							IlrXmlObject objSubSect = null;
+							if (arrListSub.size() == 1){
+									objSubSect = (IlrXmlObject) arrListSub.get(0);
+									String vact = (String) new IlrReflect().get(objSubSect, objSubSect.getXOMClass().getAttribute("S_VACT"));
+									log.error("vact " +vact);
+									if(vact != null && flag == true &&( vact.equalsIgnoreCase("D")))
+										errorCodeMsg.errorCodeErrorMsg( errorCode, objSubSect.getAbsoluteXPath(true)+ "/S_VACT" );
+									else if(vact != null && flag == true &&( vact.equalsIgnoreCase("N")))
+										errorCodeMsg.errorCodeErrorMsg( errorCode, objSubSect.getAbsoluteXPath(true)+ "/S_VACT" );
+							}
+							if (arrListSub.size() >= 2) {
+									objSubSect = (IlrXmlObject) arrListSub.get(0);
+									String vact = (String) new IlrReflect().get(objSubSect, objSubSect.getXOMClass().getAttribute("S_VACT"));
+									log.error("vact " +vact);
+									if(vact != null && flag == true &&( vact.equalsIgnoreCase("D"))){
+										log.error("inside if");
+										objSubSect = (IlrXmlObject) arrListSub.get(1);
+										String vact2 = (String) new IlrReflect().get(objSubSect, objSubSect.getXOMClass().getAttribute("S_VACT"));
+										log.error("vact2 " +vact2);
+										if(vact2 != null&&  ( !vact2.equalsIgnoreCase("N"))){
+											log.error("inside second if");
+											errorCodeMsg.errorCodeErrorMsg( errorCode, objSubSect.getAbsoluteXPath(true)+ "/S_VACT" );
+											count++;
+										}
+									}
+									else if(vact != null && flag == true &&( vact.equalsIgnoreCase("N"))){
+										objSubSect = (IlrXmlObject) arrListSub.get(1);
+										String vact2 = (String) new IlrReflect().get(objSubSect, objSubSect.getXOMClass().getAttribute("S_VACT"));
+										if(vact2 != null&&  ( !vact2.equalsIgnoreCase("D"))){
+											errorCodeMsg.errorCodeErrorMsg( errorCode, objSubSect.getAbsoluteXPath(true)+ "/S_VACT" );
+											count++;
+										}
+									}
+									else if(vact!=null && flag == true &&( !vact.equalsIgnoreCase("N") ||!vact.equalsIgnoreCase("D"))){
+										objSubSect = (IlrXmlObject) arrListSub.get(1);
+										String vact2 = (String) new IlrReflect().get(objSubSect, objSubSect.getXOMClass().getAttribute("S_VACT"));
+										if(vact2 != null && vact2.equalsIgnoreCase("N")){
+											errorCodeMsg.errorCodeErrorMsg( errorCode, objSubSect.getAbsoluteXPath(true)+ "/S_VACT" );
+											count++;
+										}
+										else if(vact2 != null && vact2.equalsIgnoreCase("D")){
+											errorCodeMsg.errorCodeErrorMsg( errorCode, objSubSect.getAbsoluteXPath(true)+ "/S_VACT" );
+											count++;
+										}
+									}
+									
+							}
+						}
+					}
+				}
+            }catch (Exception e) 
+			{
+                log.error("Error occurred in occurenceofSvlanMapping : " +e);
+                return false;
+            }
+            if(count>=1){
+            	log.error("COUNT :"+count);
+            	return true;
+            }
+            	
+return false;
+}
+function boolean occurenceofuactNCI(java.util.Vector coll, java.lang.String list, java.lang.String ncifeildvalue, java.lang.String errorCode, com.wisor.brms.ErrorCodeMsg errorCodeMsg)
+{
+Logger log = new Logger();
+int count = 0;
+log.error("Entering occurenceofuactNCI");
+if (coll == null) 
+{
+	log.error("Exiting with false");
+	return false;
+}
+
+ArrayList arrList = new ArrayList(); arrList.addAll(coll);
+ArrayList arrListSub;
+IlrXmlObject objSect = null;
+log.error("Befor Try");
+log.error("ERROR CODE FROM RULE :"+errorCode);
+try {
+	for (int i = 0; i < arrList.size(); i++) 
+	{
+		log.error("UNI_MAPPING loop"+i);
+		boolean flag1 = false;
+		boolean flag2 = false;
+		boolean flag3 = false;
+		boolean flag4 = false;
+		boolean flag5 = false;
+		boolean flag6 = false;
+		
+		//boolean svlanFlag = false;
+		//boolean cevlanFlag = false;
+		objSect = (IlrXmlObject) arrList.get(i);
+		String uactfeild = (String) new IlrReflect().get(objSect, objSect.getXOMClass().getAttribute("UACT"));
+		String ncifeild = (String) new IlrReflect().get(objSect, objSect.getXOMClass().getAttribute("NCI"));
+		String ruidfeild = (String) new IlrReflect().get(objSect, objSect.getXOMClass().getAttribute("RUID"));
+		log.error("UACT is " +uactfeild);
+		log.error("NCI is " +ncifeild);
+		log.error("RUID is " +ruidfeild);		
+		com.wisor.brms.asog.Position p1 = new com.wisor.brms.asog.Position();
+		boolean ruidstatus = p1.positionOftagValueEqualToValue(7,ruidfeild,"D");
+		log.error("RUIDstatus " +ruidstatus);
+		if(uactfeild != null && ncifeild != null  && (!uactfeild.equalsIgnoreCase("D")) && (ncifeild.equalsIgnoreCase(ncifeildvalue) ||ncifeild.equalsIgnoreCase(ncifeildvalue)|| ncifeild.equalsIgnoreCase(ncifeildvalue)) && list.equalsIgnoreCase("SVLAN_MAPPINGList"))
+		{
+			flag1 = true;
+			log.error("Flag is true for first if");
+		}
+		else if(uactfeild != null && ncifeild != null  && (!uactfeild.equalsIgnoreCase("D")) && (ncifeild.equalsIgnoreCase(ncifeildvalue)) && list.equalsIgnoreCase("CEVLAN_MAPPINGList")){
+			flag2 = true;
+			log.error("Flag is true for second if");
+		}
+		
+		
+		Object ob = new IlrReflect().get(objSect, objSect.getXOMClass().getAttribute(list));
+		if(ob != null)
+		{
+			log.error("Entered if vect != null");
+			Vector vect = (Vector) ob;
+			arrListSub = new ArrayList();
+			arrListSub.addAll(vect); 
+			IlrXmlObject objSubSect = null;
+			if(list.equalsIgnoreCase("SVLAN_MAPPINGList") && flag1){
+				for(int j=0;j<arrListSub.size();j++){
+					objSubSect = (IlrXmlObject) arrListSub.get(j);
+					log.error("Inside 1st inner for loop");
+					IlrXmlObject svlan = (IlrXmlObject) new IlrReflect().get(objSubSect, objSubSect.getXOMClass().getAttribute("S_VLAN"));
+					if(svlan!=null ){
+						errorCodeMsg.errorCodeErrorMsg( errorCode, objSubSect.getAbsoluteXPath(true)+ "/S_VLAN" );
+						count++;
+					}
+				}
+			}
+			if(list.equalsIgnoreCase("CEVLAN_MAPPINGList") && flag2){
+				for(int j=0;j<arrListSub.size();j++){
+					objSubSect = (IlrXmlObject) arrListSub.get(j);
+					log.error("Inside 2nd inner for loop");
+					IlrXmlObject cevlan = (IlrXmlObject) new IlrReflect().get(objSubSect, objSubSect.getXOMClass().getAttribute("CE_VLAN"));
+					if(cevlan!=null ){
+						errorCodeMsg.errorCodeErrorMsg( errorCode, objSubSect.getAbsoluteXPath(true)+ "/CE_VLAN" );
+						count++;
+					}
+				}
+			}
+			
+		}
+	}
+}catch(Exception e){
+	log.error("Error occurred in occurenceofSvlanMapping : " +e);
+	return false;
+}
+if(count>=1){
+	log.error("COUNT :"+count);
+	return true;
+}
+return false;
+}
+function boolean occurenceofuactNCIRuid(java.util.Vector coll, java.lang.String list, java.lang.String ncifeildvalue, java.lang.String errorCode, com.wisor.brms.ErrorCodeMsg errorCodeMsg)
+{
+Logger log = new Logger();
+int count = 0;
+log.error("Entering occurenceofuactNCIRuid");
+if (coll == null) 
+{
+	log.error("Exiting with false");
+	return false;
+}
+
+ArrayList arrList = new ArrayList(); arrList.addAll(coll);
+ArrayList arrListSub;
+IlrXmlObject objSect = null;
+log.error("Befor Try");
+log.error("ERROR CODE FROM RULE :"+errorCode);
+try {
+	for (int i = 0; i < arrList.size(); i++) 
+	{
+		log.error("UNI_MAPPING loop"+i);
+		boolean flag1 = false;
+		boolean flag2 = false;
+	
+		objSect = (IlrXmlObject) arrList.get(i);
+		String uactfeild = (String) new IlrReflect().get(objSect, objSect.getXOMClass().getAttribute("UACT"));
+		String ncifeild = (String) new IlrReflect().get(objSect, objSect.getXOMClass().getAttribute("NCI"));
+		String ruidfeild = (String) new IlrReflect().get(objSect, objSect.getXOMClass().getAttribute("RUID"));
+		log.error("RUID is " +ruidfeild);		
+		com.wisor.brms.asog.Position p1 = new com.wisor.brms.asog.Position();
+		boolean ruidstatus = p1.positionOftagValueEqualToValue(7,ruidfeild,"D");
+		log.error("RUIDstatus " +ruidstatus);
+		
+		if(uactfeild != null && ncifeild != null  && (!uactfeild.equalsIgnoreCase("D")) && (ncifeild.equalsIgnoreCase(ncifeildvalue)) && list.equalsIgnoreCase("CEVLAN_MAPPINGList") && ruidstatus){
+			flag1 = true;
+			log.error("Flag is true for RUID Status");
+		}
+		if(uactfeild != null && ncifeild != null  && (!uactfeild.equalsIgnoreCase("D")) && (ncifeild.equalsIgnoreCase(ncifeildvalue)) && list.equalsIgnoreCase("SVLAN_MAPPINGList") && !ruidstatus){
+			flag2 = true;
+			log.error("Flag is true for RUID2 Status");
+		}
+		Object ob = new IlrReflect().get(objSect, objSect.getXOMClass().getAttribute(list));
+		if(ob != null)
+		{
+			log.error("Entered if vect != null");
+			Vector vect = (Vector) ob;
+			arrListSub = new ArrayList();
+			arrListSub.addAll(vect); 
+			IlrXmlObject objSubSect = null;
+		
+			if(list.equalsIgnoreCase("CEVLAN_MAPPINGList") && flag1){
+				for(int j=0;j<arrListSub.size();j++){
+					objSubSect = (IlrXmlObject) arrListSub.get(j);
+					log.error("Inside RUID inner for loop");
+					IlrXmlObject svlan = (IlrXmlObject) new IlrReflect().get(objSubSect, objSubSect.getXOMClass().getAttribute("CE_VLAN"));
+					if(svlan!=null ){
+						errorCodeMsg.errorCodeErrorMsg( errorCode, objSubSect.getAbsoluteXPath(true)+ "/CE_VLAN" );
+						count++;
+					}
+				}
+			}
+			if(list.equalsIgnoreCase("SVLAN_MAPPINGList") && flag2){
+				for(int j=0;j<arrListSub.size();j++){
+					objSubSect = (IlrXmlObject) arrListSub.get(j);
+					log.error("Inside RUID inner for loop");
+					IlrXmlObject svlan = (IlrXmlObject) new IlrReflect().get(objSubSect, objSubSect.getXOMClass().getAttribute("S_VLAN"));
+					if(svlan!=null ){
+						errorCodeMsg.errorCodeErrorMsg( errorCode, objSubSect.getAbsoluteXPath(true)+ "/S_VLAN" );
+						count++;
+					}
+				}
+			}
+		}
+	}
+}catch(Exception e){
+	log.error("Error occurred in occurenceofSvlanMapping : " +e);
+	return false;
+}
+if(count>=1){
+	log.error("COUNT :"+count);
+	return true;
+}
+return false;
+}
+function boolean occurenceofuactRuid(com.wisor.brms.ErrorCodeMsg errorCodeMsg, java.util.Vector coll, java.lang.String list, java.lang.String errorCode)
+{
+Logger log = new Logger();
+int count = 0;
+log.error("Entering occurenceofuactRuid");
+if (coll == null) 
+{
+	log.error("Exiting with false");
+	return false;
+}
+
+ArrayList arrList = new ArrayList(); arrList.addAll(coll);
+ArrayList arrListSub;
+IlrXmlObject objSect = null;
+log.error("Befor Try");
+log.error("ERROR CODE FROM RULE :"+errorCode);
+try {
+	for (int i = 0; i < arrList.size(); i++) 
+	{
+		log.error("UNI_MAPPING loop"+i);
+		boolean flag1 = false;
+		boolean flag2 = false;
+
+		objSect = (IlrXmlObject) arrList.get(i);
+		String uactfeild = (String) new IlrReflect().get(objSect, objSect.getXOMClass().getAttribute("UACT"));
+		String ruidfeild = (String) new IlrReflect().get(objSect, objSect.getXOMClass().getAttribute("RUID"));
+		log.error("UACT is " +uactfeild);
+		
+		log.error("RUID is " +ruidfeild);		
+		com.wisor.brms.asog.Position p1 = new com.wisor.brms.asog.Position();
+		boolean ruidstatus = p1.positionOftagValueEqualToValue(7,ruidfeild,"D");
+		log.error("RUIDstatus " +ruidstatus);
+		if(uactfeild != null &&  (uactfeild.equalsIgnoreCase("D")) && list.equalsIgnoreCase("CEVLAN_MAPPINGList") && ruidstatus)
+		{
+			flag1 = true;
+			log.error("Flag is true for first if");
+		}
+		else if(uactfeild != null && (uactfeild.equalsIgnoreCase("D")) && list.equalsIgnoreCase("SVLAN_MAPPINGList")&& !ruidstatus){
+			flag2 = true;
+			log.error("Flag is true for second if");
+		}
+		Object ob = new IlrReflect().get(objSect, objSect.getXOMClass().getAttribute(list));
+		if(ob != null)
+		{
+			log.error("Entered if vect != null");
+			Vector vect = (Vector) ob;
+			arrListSub = new ArrayList();
+			arrListSub.addAll(vect); 
+			IlrXmlObject objSubSect = null;
+			if(list.equalsIgnoreCase("CEVLAN_MAPPINGList") && flag1){
+				for(int j=0;j<arrListSub.size();j++){
+					objSubSect = (IlrXmlObject) arrListSub.get(j);
+					log.error("Inside 1st inner for loop");
+					IlrXmlObject svlan = (IlrXmlObject) new IlrReflect().get(objSubSect, objSubSect.getXOMClass().getAttribute("CE_VLAN"));
+					if(svlan!=null ){
+						errorCodeMsg.errorCodeErrorMsg( errorCode, objSubSect.getAbsoluteXPath(true)+ "/CE_VLAN" );
+						count++;
+					}
+				}
+			}
+			if(list.equalsIgnoreCase("SVLAN_MAPPINGList") && flag2){
+				for(int j=0;j<arrListSub.size();j++){
+					objSubSect = (IlrXmlObject) arrListSub.get(j);
+					log.error("Inside 2nd inner for loop");
+					IlrXmlObject cevlan = (IlrXmlObject) new IlrReflect().get(objSubSect, objSubSect.getXOMClass().getAttribute("S_VLAN"));
+					if(cevlan!=null ){
+						errorCodeMsg.errorCodeErrorMsg( errorCode, objSubSect.getAbsoluteXPath(true)+ "/S_VLAN" );
+						count++;
+					}
+				}
+			}
+		}
+	}
+}catch(Exception e){
+	log.error("Error occurred in occurenceofSvlanMapping : " +e);
+	return false;
+}
+if(count>=1){
+	log.error("COUNT :"+count);
+	return true;
+}
+return false;
+}
+function boolean occurenceofVACTandUACT(java.util.Vector coll, java.lang.String errorCode, com.wisor.brms.ErrorCodeMsg errorCodeMsg)
+{
+Logger log = new Logger();
+int count = 0;
+log.error("Entering occurenceofVACTandUACT");
+			if (coll == null) 
+			{
+				log.error("Exiting with false");
+                return false;
+            }
+    
+            ArrayList arrList = new ArrayList(); arrList.addAll(coll);
+            ArrayList arrListSub;
+            IlrXmlObject objSect = null;
+			log.error("Befor Try");
+            try 
+			{
+                if (arrList.size() != 0) 
+				{
+                    for (int i = 0; i < arrList.size(); i++) 
+					{
+                     	
+                        boolean flag = false;
+    
+                        objSect = (IlrXmlObject) arrList.get(i);
+    
+                        String uact = (String) new IlrReflect().get(objSect, objSect.getXOMClass().getAttribute("UACT"));
+						log.error("UACT is " +uact);
+						
+						if(uact != null && (uact.equalsIgnoreCase("N")))
+						{
+							flag = true;
+							log.error("Flag is true now");
+						}
+						
+						Object ob = new IlrReflect().get(objSect, objSect.getXOMClass().getAttribute("SVLAN_MAPPINGList"));
+						
+						if(ob != null)
+						{
+							log.error("Entered if vect != null");
+							Vector vect = (Vector) ob;
+							arrListSub = new ArrayList();
+							arrListSub.addAll(vect); 
+							IlrXmlObject objSubSect = null;
+							
+							if (arrListSub.size() != 0) 
+							{
+								for (int j = 0; j < arrListSub.size(); j++) 
+								{								
+									objSubSect = (IlrXmlObject) arrListSub.get(j);
+									String vact = (String) new IlrReflect().get(objSubSect, objSubSect.getXOMClass().getAttribute("S_VACT"));
+									log.error("vact " +vact);
+									if(vact != null && flag == true && vact.equalsIgnoreCase("D"))
+									{
+										log.error("Finally here");
+										errorCodeMsg.errorCodeErrorMsg( errorCode, objSubSect.getAbsoluteXPath(true)+ "/S_VACT" );
+										count++;
+									}
+								}
+							}
+						}
+						else
+						{
+							log.error("Ob itself null");
+						}
+                    }
+                }
+            } 
+			catch (Exception e) 
+			{
+                log.error("Error occurred in lrefProhibitedWhenUactNotEqualsCNK : " +e);
+				log.error("Exception occured in lrefProhibitedWhenUactNotEqualsCNK" +e);
+                return false;
+            }
+            if(count>=1){
+            	log.error("COUNT :"+count);
+            	return true;
+            }
+            	
+return false;
+}
+function boolean occurenceofVACTandUACT2(java.util.Vector coll, java.lang.String errorCode, com.wisor.brms.ErrorCodeMsg errorCodeMsg)
+{
+Logger log = new Logger();
+int count = 0;
+log.error("Entering occurenceofVACTandUACT");
+			if (coll == null) 
+			{
+				log.error("Exiting with false");
+                return false;
+            }
+    
+            ArrayList arrList = new ArrayList(); arrList.addAll(coll);
+            ArrayList arrListSub;
+            IlrXmlObject objSect = null;
+			log.error("Befor Try");
+            try 
+			{
+                if (arrList.size() != 0) 
+				{
+                    for (int i = 0; i < arrList.size(); i++) 
+					{
+                     	
+                        boolean flag = false;
+    
+                        objSect = (IlrXmlObject) arrList.get(i);
+    
+                        String uact = (String) new IlrReflect().get(objSect, objSect.getXOMClass().getAttribute("UACT"));
+						log.error("UACT is " +uact);
+						
+						if(uact != null && (uact.equalsIgnoreCase("D")))
+						{
+							flag = true;
+							log.error("Flag is true now");
+						}
+						
+						Object ob = new IlrReflect().get(objSect, objSect.getXOMClass().getAttribute("SVLAN_MAPPINGList"));
+						
+						if(ob != null)
+						{
+							log.error("Entered if vect != null");
+							Vector vect = (Vector) ob;
+							arrListSub = new ArrayList();
+							arrListSub.addAll(vect); 
+							IlrXmlObject objSubSect = null;
+							
+							if (arrListSub.size() != 0) 
+							{
+								for (int j = 0; j < arrListSub.size(); j++) 
+								{								
+									objSubSect = (IlrXmlObject) arrListSub.get(j);
+									String vact = (String) new IlrReflect().get(objSubSect, objSubSect.getXOMClass().getAttribute("S_VACT"));
+									log.error("vact " +vact);
+									if(vact != null && flag == true && vact.equalsIgnoreCase("N"))
+									{
+										log.error("Finally here");
+										errorCodeMsg.errorCodeErrorMsg( errorCode, objSubSect.getAbsoluteXPath(true)+ "/S_VACT" );
+										count++;
+									}
+								}
+							}
+						}
+						else
+						{
+							log.error("Ob itself null");
+						}
+                    }
+                }
+            } 
+			catch (Exception e) 
+			{
+                log.error("Error occurred in lrefProhibitedWhenUactNotEqualsCNK : " +e);
+				log.error("Exception occured in lrefProhibitedWhenUactNotEqualsCNK" +e);
+                return false;
+            }
+            if(count>=1){
+            	log.error("COUNT :"+count);
+            	return true;
+            }
+            	
+return false;
+}
+function boolean occurenceofVACTandUACT2CEVLAN(java.util.Vector coll, java.lang.String errorCode, com.wisor.brms.ErrorCodeMsg errorCodeMsg)
+{
+Logger log = new Logger();
+  int count = 0;
+  log.error("Entering occurenceofVACTandUACT");
+  			if (coll == null) 
+  			{
+  				log.error("Exiting with false");
+                  return false;
+              }
+      
+              ArrayList arrList = new ArrayList(); arrList.addAll(coll);
+              ArrayList arrListSub;
+              IlrXmlObject objSect = null;
+  			log.error("Befor Try");
+              try 
+  			{
+                  if (arrList.size() != 0) 
+  				{
+                      for (int i = 0; i < arrList.size(); i++) 
+  					{
+                       	
+                          boolean flag = false;
+      
+                          objSect = (IlrXmlObject) arrList.get(i);
+      
+                          String uact = (String) new IlrReflect().get(objSect, objSect.getXOMClass().getAttribute("UACT"));
+  						log.error("UACT is " +uact);
+  						
+  						if(uact != null && (uact.equalsIgnoreCase("D")))
+  						{
+  							flag = true;
+  							log.error("Flag is true now");
+  						}
+  						
+  						Object ob = new IlrReflect().get(objSect, objSect.getXOMClass().getAttribute("CEVLAN_MAPPINGList"));
+  						
+  						if(ob != null)
+  						{
+  							log.error("Entered if vect != null");
+  							Vector vect = (Vector) ob;
+  							arrListSub = new ArrayList();
+  							arrListSub.addAll(vect); 
+  							IlrXmlObject objSubSect = null;
+  							
+  							if (arrListSub.size() != 0) 
+  							{
+  								for (int j = 0; j < arrListSub.size(); j++) 
+  								{								
+  									objSubSect = (IlrXmlObject) arrListSub.get(j);
+  									String vact = (String) new IlrReflect().get(objSubSect, objSubSect.getXOMClass().getAttribute("VACT"));
+  									log.error("vact " +vact);
+  									if(vact != null && flag == true && vact.equalsIgnoreCase("N"))
+  									{
+  										log.error("Finally here");
+  										errorCodeMsg.errorCodeErrorMsg( errorCode, objSubSect.getAbsoluteXPath(true)+ "/VACT" );
+  										count++;
+  									}
+  								}
+  							}
+  						}
+  						else
+  						{
+  							log.error("Ob itself null");
+  						}
+                      }
+                  }
+              } 
+  			catch (Exception e) 
+  			{
+                  log.error("Error occurred in lrefProhibitedWhenUactNotEqualsCNK : " +e);
+  				log.error("Exception occured in lrefProhibitedWhenUactNotEqualsCNK" +e);
+                  return false;
+              }
+              if(count>=1){
+              	log.error("COUNT :"+count);
+              	return true;
+              }
+              	
+  return false;
+}
+function boolean occurenceofVACTandUACT3(java.util.Vector coll, java.lang.String errorCode, com.wisor.brms.ErrorCodeMsg errorCodeMsg)
+{
+Logger log = new Logger();
+int count = 0;
+log.error("Entering occurenceofVACTandUACT");
+			if (coll == null) 
+			{
+				log.error("Exiting with false");
+                return false;
+            }
+    
+            ArrayList arrList = new ArrayList(); arrList.addAll(coll);
+            ArrayList arrListSub;
+            IlrXmlObject objSect = null;
+			log.error("Befor Try");
+            try 
+			{
+                if (arrList.size() != 0) 
+				{
+                    for (int i = 0; i < arrList.size(); i++) 
+					{
+                     	
+                        boolean flag = false;
+    
+                        objSect = (IlrXmlObject) arrList.get(i);
+    
+                        String uact = (String) new IlrReflect().get(objSect, objSect.getXOMClass().getAttribute("UACT"));
+						log.error("UACT is " +uact);
+						
+						if(uact != null && ((uact.equalsIgnoreCase("D"))||(uact.equalsIgnoreCase("N"))))
+						{
+							flag = true;
+							log.error("Flag is true now");
+						}
+						
+						Object ob = new IlrReflect().get(objSect, objSect.getXOMClass().getAttribute("SVLAN_MAPPINGList"));
+						
+						if(ob != null)
+						{
+							log.error("Entered if vect != null");
+							Vector vect = (Vector) ob;
+							arrListSub = new ArrayList();
+							arrListSub.addAll(vect); 
+							IlrXmlObject objSubSect = null;
+							
+							if (arrListSub.size() != 0) 
+							{
+								for (int j = 0; j < arrListSub.size(); j++) 
+								{								
+									objSubSect = (IlrXmlObject) arrListSub.get(j);
+									String vact = (String) new IlrReflect().get(objSubSect, objSubSect.getXOMClass().getAttribute("S_VACT"));
+									log.error("vact " +vact);
+									if(vact != null && flag == true && vact.equalsIgnoreCase("E"))
+									{
+										log.error("Finally here");
+										errorCodeMsg.errorCodeErrorMsg( errorCode, objSubSect.getAbsoluteXPath(true)+ "/S_VACT" );
+										count++;
+									}
+								}
+							}
+						}
+						else
+						{
+							log.error("Ob itself null");
+						}
+                    }
+                }
+            } 
+			catch (Exception e) 
+			{
+                log.error("Error occurred in lrefProhibitedWhenUactNotEqualsCNK : " +e);
+				log.error("Exception occured in lrefProhibitedWhenUactNotEqualsCNK" +e);
+                return false;
+            }
+            if(count>=1){
+            	log.error("COUNT :"+count);
+            	return true;
+            }
+            	
+return false;
+}
+function boolean occurenceofVACTandUACT3CEVLAN(java.util.Vector coll, java.lang.String errorCode, com.wisor.brms.ErrorCodeMsg errorCodeMsg)
+{
+Logger log = new Logger();
+  int count = 0;
+  log.error("Entering occurenceofVACTandUACT");
+  			if (coll == null) 
+  			{
+  				log.error("Exiting with false");
+                  return false;
+              }
+      
+              ArrayList arrList = new ArrayList(); arrList.addAll(coll);
+              ArrayList arrListSub;
+              IlrXmlObject objSect = null;
+  			log.error("Befor Try");
+              try 
+  			{
+                  if (arrList.size() != 0) 
+  				{
+                      for (int i = 0; i < arrList.size(); i++) 
+  					{
+                       	
+                          boolean flag = false;
+      
+                          objSect = (IlrXmlObject) arrList.get(i);
+      
+                          String uact = (String) new IlrReflect().get(objSect, objSect.getXOMClass().getAttribute("UACT"));
+  						log.error("UACT is " +uact);
+  						
+  						if(uact != null && ((uact.equalsIgnoreCase("D"))||(uact.equalsIgnoreCase("N"))))
+  						{
+  							flag = true;
+  							log.error("Flag is true now");
+  						}
+  						
+  						Object ob = new IlrReflect().get(objSect, objSect.getXOMClass().getAttribute("CEVLAN_MAPPINGList"));
+  						
+  						if(ob != null)
+  						{
+  							log.error("Entered if vect != null");
+  							Vector vect = (Vector) ob;
+  							arrListSub = new ArrayList();
+  							arrListSub.addAll(vect); 
+  							IlrXmlObject objSubSect = null;
+  							
+  							if (arrListSub.size() != 0) 
+  							{
+  								for (int j = 0; j < arrListSub.size(); j++) 
+  								{								
+  									objSubSect = (IlrXmlObject) arrListSub.get(j);
+  									String vact = (String) new IlrReflect().get(objSubSect, objSubSect.getXOMClass().getAttribute("VACT"));
+  									log.error("vact " +vact);
+  									if(vact != null && flag == true && vact.equalsIgnoreCase("E"))
+  									{
+  										log.error("Finally here");
+  										errorCodeMsg.errorCodeErrorMsg( errorCode, objSubSect.getAbsoluteXPath(true)+ "/VACT" );
+  										count++;
+  									}
+  								}
+  							}
+  						}
+  						else
+  						{
+  							log.error("Ob itself null");
+  						}
+                      }
+                  }
+              } 
+  			catch (Exception e) 
+  			{
+                  log.error("Error occurred in lrefProhibitedWhenUactNotEqualsCNK : " +e);
+  				log.error("Exception occured in lrefProhibitedWhenUactNotEqualsCNK" +e);
+                  return false;
+              }
+              if(count>=1){
+              	log.error("COUNT :"+count);
+              	return true;
+              }
+              	
+  return false;
+}
+function boolean occurenceofVACTandUACTCEVLAN(java.util.Vector coll, java.lang.String errorCode, com.wisor.brms.ErrorCodeMsg errorCodeMsg)
+{
+Logger log = new Logger();
+  int count = 0;
+  log.error("Entering occurenceofVACTandUACT");
+  			if (coll == null) 
+  			{
+  				log.error("Exiting with false");
+                  return false;
+              }
+      
+              ArrayList arrList = new ArrayList(); arrList.addAll(coll);
+              ArrayList arrListSub;
+              IlrXmlObject objSect = null;
+  			log.error("Befor Try");
+              try 
+  			{
+                  if (arrList.size() != 0) 
+  				{
+                      for (int i = 0; i < arrList.size(); i++) 
+  					{
+                       	
+                          boolean flag = false;
+      
+                          objSect = (IlrXmlObject) arrList.get(i);
+      
+                          String uact = (String) new IlrReflect().get(objSect, objSect.getXOMClass().getAttribute("UACT"));
+  						log.error("UACT is " +uact);
+  						
+  						if(uact != null && (uact.equalsIgnoreCase("N")))
+  						{
+  							flag = true;
+  							log.error("Flag is true now");
+  						}
+  						
+  						Object ob = new IlrReflect().get(objSect, objSect.getXOMClass().getAttribute("CEVLAN_MAPPINGList"));
+  						
+  						if(ob != null)
+  						{
+  							log.error("Entered if vect != null");
+  							Vector vect = (Vector) ob;
+  							arrListSub = new ArrayList();
+  							arrListSub.addAll(vect); 
+  							IlrXmlObject objSubSect = null;
+  							
+  							if (arrListSub.size() != 0) 
+  							{
+  								for (int j = 0; j < arrListSub.size(); j++) 
+  								{								
+  									objSubSect = (IlrXmlObject) arrListSub.get(j);
+  									String vact = (String) new IlrReflect().get(objSubSect, objSubSect.getXOMClass().getAttribute("VACT"));
+  									log.error("vact " +vact);
+  									if(vact != null && flag == true && vact.equalsIgnoreCase("D"))
+  									{
+  										log.error("Finally here");
+  										errorCodeMsg.errorCodeErrorMsg( errorCode, objSubSect.getAbsoluteXPath(true)+ "/VACT" );
+  										count++;
+  									}
+  								}
+  							}
+  						}
+  						else
+  						{
+  							log.error("Ob itself null");
+  						}
+                      }
+                  }
+              } 
+  			catch (Exception e) 
+  			{
+                  log.error("Error occurred in lrefProhibitedWhenUactNotEqualsCNK : " +e);
+  				log.error("Exception occured in lrefProhibitedWhenUactNotEqualsCNK" +e);
+                  return false;
+              }
+              if(count>=1){
+              	log.error("COUNT :"+count);
+              	return true;
+              }
+              	
+  return false;
+}
+function boolean occurenceofVPNIDandSVLANSTART(java.util.Vector coll, java.lang.String errorCode, com.wisor.brms.ErrorCodeMsg errorCodeMsg)
+{
+Logger log = new Logger();
+int count = 0;
+log.error("Entering occurenceofVPNIDandSVLANSTART");
+			if (coll == null) 
+			{
+				log.error("Exiting with false");
+                return false;
+            }
+    
+            ArrayList arrList = new ArrayList(); arrList.addAll(coll);
+            ArrayList arrListSub;
+            ArrayList arrListSub2;
+            IlrXmlObject objSect = null;
+            IlrXmlObject ob2 = null;
+            IlrXmlObject ob3 = null;
+            String vlan=null;
+			log.error("Befor Try");
+			com.wisor.brms.asog.Populated p1= new Populated();
+            try 
+		{
+                if (arrList.size() != 0) 
+				{
+                    for (int i = 0; i < arrList.size(); i++) 
+					{
+                     	
+                        boolean flag = false;
+    
+                        objSect = (IlrXmlObject) arrList.get(i);
+    
+                        String vpn_id = (String) new IlrReflect().get(objSect, objSect.getXOMClass().getAttribute("VPN_ID"));
+						log.error("VPN_ID is " +vpn_id);
+						
+						
+						Object ob = new IlrReflect().get(objSect, objSect.getXOMClass().getAttribute("SVLAN_MAPPINGList"));
+						
+						if(ob != null)
+						{
+							log.error("Entered if vect != null");
+							Vector vect = (Vector) ob;
+							arrListSub = new ArrayList();
+							arrListSub.addAll(vect); 
+							IlrXmlObject objSubSect = null;
+							
+							
+							if (arrListSub.size() != 0) 
+							{
+								for (int j = 0; j < arrListSub.size(); j++) 
+								{								
+									objSubSect = (IlrXmlObject) arrListSub.get(j);
+									ob2 = (IlrXmlObject)new IlrReflect().get(objSubSect, objSubSect.getXOMClass().getAttribute("S_VLAN"));
+								
+										String start = (String)new IlrReflect().get(ob2, ob2.getXOMClass().getAttribute("S_VLAN_START"));
+							log.error("s_vlan_start"+start);
+   					 				if(start != null && vpn_id !=null )
+						{
+							boolean b1=p1.isPopulated(vpn_id);
+							boolean b2=p1.isPopulated(start);
+								if(b1&&b2){
+									errorCodeMsg.errorCodeErrorMsg( errorCode, objSect.getAbsoluteXPath(true)+ "/S_VLAN_START" );
+									count++;
+							}
+						}
+								}
+								}
+							}	
+							else
+							{
+								log.error("Ob itself null");
+							}
+						}
+					}
+				} 
+			
+			catch (Exception e) 
+			{
+                log.error("Error occurred in lrefProhibitedWhenVPNIDandSVLANSTARTrPopulated : " +e);
+                return false;
+            }
+            if(count>=1){
+            	log.error("COUNT :"+count);
+            	return true;
+            }
+            	
+return false;
+}
+function boolean occurenceofVPNIDandSVLANSTARTandASN(java.util.Vector coll, java.lang.String errorCode, com.wisor.brms.ErrorCodeMsg errorCodeMsg)
+{
+Logger log = new Logger();
+int asncount = 0;
+boolean svcount = false;
+boolean svlanStartNotPopulated = false;
+log.error("Entering occurenceofVPNIDandSVLANSTART");
+			if (coll == null) 
+			{
+				log.error("Exiting with false");
+                return false;
+            }
+    
+            ArrayList arrList = new ArrayList(); arrList.addAll(coll);
+            ArrayList arrListSub;
+            ArrayList arrListSub2;
+            IlrXmlObject objSect = null;
+            IlrXmlObject ob2 = null;
+            IlrXmlObject ob3 = null;
+            String vlan=null;
+			log.error("Befor Try");
+			com.wisor.brms.asog.Populated p1= new Populated();
+			com.wisor.brms.asog.xpath.Occurence oc= new Occurence("");
+            try 
+		{
+                if (arrList.size() != 0) 
+				{
+                    for (int i = 0; i < arrList.size(); i++) 
+					{
+                     	
+                        boolean flag = false;
+    
+                        objSect = (IlrXmlObject) arrList.get(i);
+    
+                        String vpn_id = (String) new IlrReflect().get(objSect, objSect.getXOMClass().getAttribute("VPN_ID"));
+						log.error("VPN_ID is " +vpn_id);
+						
+						 String asn = (String) new IlrReflect().get(objSect, objSect.getXOMClass().getAttribute("ASN"));
+						log.error("ASN is " +asn);
+						
+						
+						Object ob = new IlrReflect().get(objSect, objSect.getXOMClass().getAttribute("SVLAN_MAPPINGList"));
+						
+						if(ob != null)
+						{
+							log.error("Entered if vect != null");
+							Vector vect = (Vector) ob;
+							arrListSub = new ArrayList();
+							arrListSub.addAll(vect); 
+							IlrXmlObject objSubSect = null;
+							
+							
+							if (arrListSub.size() != 0) 
+							{
+								for (int j = 0; j < arrListSub.size(); j++) 
+								{								
+									objSubSect = (IlrXmlObject) arrListSub.get(j);
+									ob2 = (IlrXmlObject)new IlrReflect().get(objSubSect, objSubSect.getXOMClass().getAttribute("S_VLAN"));
+								
+										String start = (String)new IlrReflect().get(ob2, ob2.getXOMClass().getAttribute("S_VLAN_START"));
+							log.error("s_vlan_start"+start);
+   					 				if(start != null && vpn_id !=null )
+						{
+							boolean b1=p1.isPopulated(vpn_id);
+							boolean b2=p1.isPopulated(start);
+							//boolean o1=oc.VirtualNoOccurenceIsPopulated(coll,start);
+							//boolean o2=oc.allOccurenceOfFieldNotEqualToValue(start,null);
+							boolean b3=p1.isNotPopulated(asn);
+								
+							if(b1&&b3){
+									
+									asncount++;
+							}
+							else if(b1&&b2){
+									
+									svcount=true;
+									log.error("svcount="+svcount);
+							}
+							else{ log.error("SV_:LAN not populated");
+							svlanStartNotPopulated=true;}
+							
+						}
+						
+									}
+								}
+							}	
+							else
+							{
+								log.error("Ob itself null");
+							}
+						}
+					}
+				} 
+			
+			catch (Exception e) 
+			{
+                log.error("Error occurred in lrefProhibitedWhenVPNIDandSVLANSTARTrPopulated : " +e);
+                return false;
+            }
+            if(asncount>=1){ errorCodeMsg.errorCodeErrorMsg( errorCode, objSect.getAbsoluteXPath(true)+ "/VPN_ID" );
+            	log.error("COUNT :"+asncount);
+            	return true;
+            }
+            else if (svlanStartNotPopulated==true)
+            {log.error("svlanStartNotPopulated+SV_:LAN not populated"+svlanStartNotPopulated); 
+            	
+            return false;}
+            else if(svcount==true){
+            	errorCodeMsg.errorCodeErrorMsg( errorCode, objSect.getAbsoluteXPath(true)+ "/VPN_ID" );
+            
+            	log.error("COUNT :"+svcount+"and"+arrListSub.size());
+            	return true;
+            }
+            
+            	
+return false;
+}
+function boolean refnumEqulasSegment(ilog.rules.xml.IlrXmlObject coll, java.lang.String formname)
+{
+	try
+	{		
+		int refnumCount = 0;
+		int segmentCount = 0;
+		String segment = null;
+		Object form = new Object();
+		if(bypassCANOPI.equalsIgnoreCase("false"))
+		{
+		form = new IlrReflect().get(coll, coll.getXOMClass().getAttribute(formname+"List"));
+		if(form != null)
+		{
+			Vector vect = (Vector) form;
+			ArrayList arrListSub = new ArrayList(); 
+			arrListSub.addAll(vect);
+			IlrXmlObject objSubSect = null;
+			if (arrListSub.size() != 0) 
+			{
+				bypassCANOPI = "true";
+				for (int j = 0; j < arrListSub.size(); j++) 
+				{
+					objSubSect = (IlrXmlObject) arrListSub.get(j);
+					String refnum = (String) new IlrReflect().get(objSubSect, objSubSect.getXOMClass().getAttribute("REFNUM"));
+					if(refnum != null)
+					{
+						refnumCount++;
+					}
+				}
+			}
+			System.out.println("refnumCount "+refnumCount);
+		}
+		System.out.println("bypassCANOPI "+bypassCANOPI);
+		if(bypassCANOPI.equalsIgnoreCase("true"))
+		{
+		IlrXmlObject customformObject = (IlrXmlObject) new IlrReflect().get(coll,coll.getXOMClass().getAttribute("CUSTOM_FORM"));
+
+		IlrXmlObject segmentObject = (IlrXmlObject) new IlrReflect().get(customformObject ,customformObject.getXOMClass().getAttribute("SEGMENT"));
+
+		Object seg_name = new IlrReflect().get(segmentObject, segmentObject.getXOMClass().getAttribute("SEGMENT_NAMEList"));
+
+		if(seg_name != null)
+		{
+			Vector vec = (Vector) seg_name;
+			ArrayList arrListSeg = new ArrayList(); 
+			arrListSeg.addAll(vec);
+			if (arrListSeg.size() != 0) 
+			{
+				for (int k = 0; k < arrListSeg.size(); k++) 
+				{
+					segment = (String) arrListSeg.get(k);
+					if(segment != null)
+					{
+						segmentCount++;
+					}
+				}
+			}				
+		}		
+		if (refnumCount == 0 && segmentCount == 1)
+		{
+			return true;
+		}
+		if(segmentCount == 0 || refnumCount == 0)
+		{
+			return false; 
+		}
+		if (refnumCount == 1 && segmentCount == 1)
+		{
+			return false;
+		}
+		if (refnumCount > 0 && refnumCount == (segmentCount-1))
+		{
+			return true;
+		}
+	}
+	else
+	{
+		IlrXmlObject customformObject = (IlrXmlObject) new IlrReflect().get(coll,coll.getXOMClass().getAttribute("CUSTOM_FORM"));
+
+		IlrXmlObject segmentObject = (IlrXmlObject) new IlrReflect().get(customformObject ,customformObject.getXOMClass().getAttribute("SEGMENT"));
+
+		Object seg_name = new IlrReflect().get(segmentObject, segmentObject.getXOMClass().getAttribute("SEGMENT_NAMEList"));
+
+		if(seg_name != null)
+		{
+			Vector vec = (Vector) seg_name;
+			ArrayList arrListSeg = new ArrayList(); 
+			arrListSeg.addAll(vec);
+			if (arrListSeg.size() != 0) 
+			{
+				for (int k = 0; k < arrListSeg.size(); k++) 
+				{
+					segment = (String) arrListSeg.get(k);
+					if(segment != null)
+					{
+						segmentCount++;
+					}
+				}
+			}				
+		}
+		if(segmentCount == 1)
+		{
+			return true;
+		}
+	}
+	}
+	}
+	catch(Exception e)
+	{
+		return false; 
+	}
+	return false;
+}
+function boolean responseDataTypeNumericCheck(java.util.Vector coll, java.lang.String tag, java.lang.String errorcode, com.wisor.brms.ErrorCodeMsg errorCodeMsg)
+{
+Logger log = new Logger();
+log.debug("entering responseDataTypeNumericCheck");
+            if (coll == null) {
+            	log.debug("exiting with false");
+                return false;
+            }
+    
+              ArrayList arrList = new ArrayList(); arrList.addAll(coll);
+            ArrayList arrList1 = new ArrayList();
+            com.wisor.brms.asog.DatatypeCheck dataType = new com.wisor.brms.asog.DatatypeCheck();
+            IlrXmlObject obj = null;
+            int count = 0;
+    
+            try {
+                if (arrList.size() != 0) {
+                    for (int i = 0; i < arrList.size(); i++) {
+                        obj = (IlrXmlObject) arrList.get(i);
+    
+                        Object ob = new IlrReflect().get(obj, obj.getXOMClass().getAttribute(tag));
+    
+                        if (ob != null) {
+                            if (!(dataType.checkNumeric(ob.toString()))) {
+                                arrList1.add(obj.getAbsoluteXPath(true));
+                                count++;
+                            }
+                        }
+                    }
+    
+                    if (count >= 1) {
+                       // errorCode.setXpathCollection(arrList1);
+                       errorCodeMsg.errorCodeErrorMsg(errorcode, obj.getAbsoluteXPath(true)+ "/" + tag);
+                        log.debug("exiting with true");
+    
+                        return true;
+                    } else {
+                    log.debug("exiting with false");
+                        return false;
+                    }
+                }
+    		log.debug("exiting with false");
+                return false;
+            } catch (Exception e) {
+                log.error("Error occurred in responseDataTypeNumericCheck: " + e);
+    
+                return false;
+            }
+}
+function boolean responseLengthCheck(java.util.Vector coll, java.lang.String tag, int length, java.lang.String errorcode, com.wisor.brms.ErrorCodeMsg errorCodeMsg)
+{
+Logger log = new Logger();
+log.debug("entering responseLengthCheck");
+if (coll == null) {
+	log.debug("exiting with false");
+	return false;
+}
+
+ArrayList arrList = new ArrayList(); 
+arrList.addAll(coll);
+ArrayList arrList1 = new ArrayList();
+IlrXmlObject obj = null;
+int count = 0;
+
+try {
+	if (arrList.size() != 0) {
+    	for (int i = 0; i < arrList.size(); i++) {
+        	obj = (IlrXmlObject) arrList.get(i);
+			Object ob = new IlrReflect().get(obj, obj.getXOMClass().getAttribute(tag));
+
+			if (ob != null) {
+            	if (ob.toString().length() != length) {
+                	arrList1.add(obj.getAbsoluteXPath(true));
+                	count++;
+				}
+			}
+		}
+		if (count >= 1) {
+        	//errorCode.setXpathCollection(arrList1);
+        	errorCodeMsg.errorCodeErrorMsg(errorcode, obj.getAbsoluteXPath(true)+ "/" + tag);
+            log.debug("exiting with true");
+			return true;
+		} else {
+        	log.debug("exiting with false");
+			return false;
+        }
+	}
+	log.debug("exiting with false");
+	return false;
+} catch (Exception e) {
+	log.debug("Error occurred in responseLengthCheck : " + e);
+	return false;
+}
+}
+function boolean responseMaximumLengthCheck(Vector coll, String tag, int length, ErrorCodeMsg errorCode)
+{
+Logger log = new Logger();
+        if (coll == null) {
+            return false;
+        }
+
+        ArrayList arrList = new ArrayList(); arrList.addAll(coll);
+        ArrayList arrList1 = new ArrayList();
+        IlrXmlObject obj = null;
+        int count = 0;
+
+        try {
+            if (arrList.size() != 0) {
+                for (int i = 0; i < arrList.size(); i++) {
+                    obj = (IlrXmlObject) arrList.get(i);
+
+                    Object ob = new IlrReflect().get(obj, obj.getXOMClass().getAttribute(tag));
+
+                    if (ob != null) {
+                        if (ob.toString().length() > length) {
+                            arrList1.add(obj.getAbsoluteXPath(true));
+                            count++;
+                        }
+                    }
+                }
+
+                if (count >= 1) {
+                    errorCode.setXpathCollection(arrList1);
+
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+
+            return false;
+        } catch (Exception e) {
+            log.debug("Error occurred while generating the Root Xpath : " + e);
+
+            return false;
+        }
+}
+function boolean routingMatrixCheck(Vector coll, String section, String ANI)
+{
+Logger log = new Logger();
+log.debug("entering routingMatrixCheck");
+            if (coll == null) {
+            log.debug("exiting with false");
+                return false;
+            }
+    
+            ArrayList arrList = new ArrayList(); arrList.addAll(coll);
+            IlrXmlObject objSect = null;
+            int count = 0;
+            boolean flag1 = false;
+            boolean flag2 = false;
+    
+            try {
+                if (arrList.size() != 0) {
+                    for (int i = 0; i < arrList.size(); i++) {
+                        objSect = (IlrXmlObject) arrList.get(i);
+    
+                        Object aniObj = new IlrReflect().get(objSect, objSect.getXOMClass().getAttribute(ANI));
+                        IlrXmlObject subSect = (IlrXmlObject) new IlrReflect().get(objSect,
+                                objSect.getXOMClass().getAttribute(section));
+    
+                        if (subSect != null) {
+                            Object prefObj = new IlrReflect().get(subSect,
+                                    subSect.getXOMClass().getAttribute("SERV_PREF_ALL"));
+    
+                            if ((aniObj != null) && (prefObj != null)) {
+                                if (aniObj.toString().equalsIgnoreCase("ALL") && (prefObj.toString().length() >= 1)) {
+                                    flag1 = true;
+                                }
+                            }
+                        }
+    
+                       // count = count + helperRoutingMatrixCheck(objSect, section, ANI);
+                        count = count + helperRoutingMatrixCheck(objSect, section, ANI);
+                    }
+    
+                    if ((flag1 == true) && (count > 2)) {
+                    log.debug("exiting with true");
+                        return true;
+                    }
+                    log.debug("exiting with false");
+    
+                    return false;
+                }
+            } catch (Exception e) {
+                log.error("Error occurred in routingMatrixCheck : " + e);
+    
+                return false;
+            }
+    	log.debug("exiting with false");
+            return false;
+}
+function boolean routingMatrixCheck2(Vector coll, String section, String ANI)
+{
+Logger log = new Logger();
+log.debug("entering routingMatrixCheck2");
+            if (coll == null) {
+            log.debug("exiting with false");
+                return false;
+            }
+    
+            ArrayList arrList = new ArrayList(); arrList.addAll(coll);
+            IlrXmlObject objSect = null;
+            int count = 0;
+    
+            try {
+                if (arrList.size() != 0) {
+                    for (int i = 0; i < arrList.size(); i++) {
+                        boolean flag1 = false;
+    
+                        objSect = (IlrXmlObject) arrList.get(i);
+    
+                        Object aniObj = new IlrReflect().get(objSect, objSect.getXOMClass().getAttribute(ANI));
+                        IlrXmlObject subSect = (IlrXmlObject) new IlrReflect().get(objSect,
+                                objSect.getXOMClass().getAttribute(section));
+    
+                        if (subSect != null) {
+                            Object prefObj = new IlrReflect().get(subSect,
+                                    subSect.getXOMClass().getAttribute("SERV_PREF_ALL"));
+    
+                            if ((prefObj != null) && (aniObj != null)) {
+                                if ((prefObj.toString().length() >= 1) && !(aniObj.toString().equalsIgnoreCase("ALL"))) {
+                                    flag1 = true;
+                                } else if ((prefObj != null) && (aniObj == null)) {
+                                    if (prefObj.toString().length() >= 1) {
+                                        flag1 = true;
+                                    }
+                                }
+                            }
+                        }
+    
+                        //count = helperRoutingMatrixCheck1(objSect, section);
+                        count = helperRoutingMatrixCheck1(objSect, section);
+    
+                        if ((flag1 == true) && (count > 1)) {
+                        log.debug("exiting with true");
+                            return true;
+                        }
+                    }
+                }
+    		log.debug("exiting with false");
+                return false;
+            } catch (Exception e) {
+                log.error("Error occurred routingMatrixCheck2 : " + e);
+    
+                return false;
+            }
+}
+function boolean saliAtleastOneOccurenceSectionPopulated(java.lang.String section, java.lang.String tag, com.wisor.brms.ErrorCodeMsg errorCode, ilog.rules.factory.IlrReflect reflect, ilog.rules.engine.IlrContext context)
+{
+Logger log = new Logger();
+log.debug("entering saliAtleastOneOccurenceSectionPopulated");
+        if(reflect == null)
+     {
+   reflect = context.getRuleset().reflect; 
+      }
+        ArrayList list1 = reflect.getDynamicClasses();
+
+        IlrXmlObject objs = null;
+        IlrClass clas1 = null;
+
+        try {
+            for (int i = 0; i < list1.size(); i++) {
+                IlrDynamicClass ob = (IlrDynamicClass) list1.get(i);
+
+                //System.out.println(ob.getName());
+                if (ob.getName().equalsIgnoreCase(section)) {
+                    clas1 = (IlrClass) ob;
+                    //System.out.println("Enter for 2" + ob.getName());
+
+                    //System.out.println(ob.getClass().getName());
+                }
+            }
+
+            Object[] obs = context.getObjects(clas1);
+
+            for (int i = 0; i < obs.length; i++) {
+                objs = (IlrXmlObject) obs[i];
+
+                Object tagObject = reflect.get(objs, objs.getXOMClass().getAttribute(tag));
+
+                if (tagObject != null) {
+                    return true;
+                }
+            }
+
+            return false;
+        } catch (Exception e) {
+            
+            log.error("exception in saliAtleastOneOccurenceSectionPopulated :"+e);
+            return false;
+        }
+}
+function boolean saliAtleastOneOccurenceSectionPopulated1(java.lang.String section, com.wisor.brms.ErrorCodeMsg errorCode, ilog.rules.factory.IlrReflect reflect, ilog.rules.engine.IlrContext context)
+{
+Logger log = new Logger();
+log.debug("entering saliAtleastOneOccurenceSectionPopulated");
+        if(reflect == null)
+     {
+   reflect = context.getRuleset().reflect;
+      }
+        ArrayList list1 = reflect.getDynamicClasses();
+
+        IlrXmlObject objs = null;
+        IlrClass clas1 = null;
+
+        try {
+            for (int i = 0; i < list1.size(); i++) {
+                IlrDynamicClass ob = (IlrDynamicClass) list1.get(i);
+
+                //System.out.println(ob.getName());
+                if (ob.getName().equalsIgnoreCase(section)) {
+                    clas1 = (IlrClass) ob;
+                    //System.out.println("Enter for 2" + ob.getName());
+
+                    //System.out.println(ob.getClass().getName());
+                }
+            }
+
+            Object[] obs = context.getObjects(clas1);
+
+            for (int i = 0; i < obs.length; i++) {
+                objs = (IlrXmlObject) obs[i];
+
+               
+
+                if (obs.length >0) {
+                    return true;
+                }
+            }
+
+            return false;
+        } catch (Exception e) {
+            
+            log.error("exception in saliAtleastOneOccurenceSectionPopulated :"+e);
+            return false;
+        }
+}
+function boolean saliValueOfFieldNotEqualsOccurenceOfOtherSection(java.lang.String fieldValue, java.lang.String section, java.lang.String tag, com.wisor.brms.ErrorCodeMsg errorCode, ilog.rules.factory.IlrReflect reflect, ilog.rules.engine.IlrContext context)
+{
+Logger log = new Logger();
+log.debug("entering saliValueOfFieldNotEqualsOccurenceOfOtherSection");
+        if (fieldValue == null) {
+            return false;
+        }
+   if(reflect == null)
+     {
+   reflect = context.getRuleset().reflect;
+      }
+        ArrayList list1 = reflect.getDynamicClasses();
+
+        IlrXmlObject objs = null;
+        IlrClass clas1 = null;
+        int count = 0;
+        int fieldVal = 0;
+
+        try {
+            for (int i = 0; i < list1.size(); i++) {
+                IlrDynamicClass ob = (IlrDynamicClass) list1.get(i);
+
+                //System.out.println(ob.getName());
+                if (ob.getName().equalsIgnoreCase(section)) {
+                    clas1 = (IlrClass) ob;
+                    //System.out.println("Enter for 1" + ob.getName());
+
+                    //System.out.println(ob.getClass().getName());
+                }
+            }
+
+            fieldVal = Integer.parseInt(fieldValue);
+
+            Object[] obs = context.getObjects(clas1);
+
+            for (int i = 0; i < obs.length; i++) {
+                objs = (IlrXmlObject) obs[i];
+
+                Object tagObject = reflect.get(objs, objs.getXOMClass().getAttribute(tag));
+
+                if (tagObject != null) {
+                    count++;
+                }
+            }
+
+            if (fieldVal != count) {
+                return true;
+            }
+
+            return false;
+        } catch (Exception e) {
+           
+            log.error("exception in valueOfFieldNotEqualsOccurenceOfOtherSection :"+e);
+            return false;
+        }
+}
+function boolean saliValueOfFieldNotEqualsOccurenceOfOtherSection1(java.lang.String fieldValue, java.lang.String section, com.wisor.brms.ErrorCodeMsg errorCode, ilog.rules.factory.IlrReflect reflect, ilog.rules.engine.IlrContext context)
+{
+Logger log = new Logger();
+log.debug("entering saliValueOfFieldNotEqualsOccurenceOfOtherSection1");
+        if (fieldValue == null) {
+            return false;
+        }
+   if(reflect == null)
+     {
+   reflect = context.getRuleset().reflect; 
+      }
+        ArrayList list1 = reflect.getDynamicClasses();
+
+        IlrXmlObject objs = null;
+        IlrClass clas1 = null;
+        int count = 0;
+        int fieldVal = 0;
+
+        try {
+            for (int i = 0; i < list1.size(); i++) {
+                IlrDynamicClass ob = (IlrDynamicClass) list1.get(i);
+
+                //System.out.println(ob.getName());
+                if (ob.getName().equalsIgnoreCase(section)) {
+                    clas1 = (IlrClass) ob;
+                    //System.out.println("Enter for 1" + ob.getName());
+
+                    //System.out.println(ob.getClass().getName());
+                }
+            }
+
+            fieldVal = Integer.parseInt(fieldValue);
+
+            Object[] obs = context.getObjects(clas1);
+
+            for (int i = 0; i < obs.length; i++) {
+                objs = (IlrXmlObject) obs[i];
+
+               
+            }
+
+            if (fieldVal != obs.length) {
+                return true;
+            }
+
+            return false;
+        } catch (Exception e) {
+           
+            log.error("exception in valueOfFieldNotEqualsOccurenceOfOtherSection :"+e);
+            return false;
+        }
+}
+function boolean segactValueCheck(java.lang.String segact, java.lang.String ringSegact, java.lang.String errorcode, com.wisor.brms.ErrorCodeMsg errorCodeMsg, java.util.Vector coll)
+{
+Logger log = new Logger();
+log.debug("entering segactValueCheck method");
+            if (coll == null) {
+            log.debug("exiting with false");
+                return false;
+            }
+ArrayList arrList = new ArrayList();
+Iterator itr = coll.iterator();
+	while (itr.hasNext()) {
+    	arrList.add(itr.next());
+	}
+log.debug("arrList size:" + arrList.size());
+    
+              //ArrayList arrList = new ArrayList(); arrList.addAll(coll);
+            IlrXmlObject obj = null;
+            ArrayList arrList1 = new ArrayList();
+            boolean flag = false;
+    
+            if (ringSegact != null) {
+                arrList1.add(ringSegact);
+            }
+    
+            try {
+                if (arrList.size() != 0) {
+                    for (int i = 0; i < arrList.size(); i++) {
+                        obj = (IlrXmlObject) arrList.get(i);
+    
+                        Object ob = new IlrReflect().get(obj, obj.getXOMClass().getAttribute(segact));
+    
+                        if (ob != null) {
+                            arrList1.add(ob);
+                        }
+                    }
+                }
+    
+                for (int i = 0; i < arrList1.size(); i++) {
+                    if (arrList1.get(i).toString().equalsIgnoreCase("N")) {
+                        flag = true;
+                    }
+    
+                    if (arrList1.get(i).toString().equalsIgnoreCase("D") && flag) {
+                        obj = (IlrXmlObject) arrList.get(i - 1);
+                        //errorCode.setXpath(obj.getAbsoluteXPath(true));
+                        errorCodeMsg.errorCodeErrorMsg(errorcode, obj.getAbsoluteXPath(true)+ "/" + segact);
+    			log.debug("exiting with true");
+                        return true;
+                    }
+                }
+                log.debug("exiting with false");
+    
+                return false;
+            } catch (Exception e) {
+                log.error("Error occurred segactValueCheck : " + e);
+    
+                return false;
+            }
+}
+function ArrayList servprefTagPopulated(ilog.rules.xml.IlrXmlObject obj, java.lang.String section, java.util.ArrayList arrList)
+{
+Logger log = new Logger();
+log.debug("entering servprefTagPopulated");
+            try {
+                IlrXmlObject subSect = (IlrXmlObject) new IlrReflect().get(obj, obj.getXOMClass().getAttribute(section));
+    
+                if (subSect != null) {
+                    ilog.rules.bom.IlrClass clas = subSect.getXOMClass();
+                    Iterator itr = clas.allAttributes();
+    
+                    while (itr.hasNext()) {
+                        ilog.rules.bom.IlrAttribute attObj = (ilog.rules.bom.IlrAttribute) itr.next();
+    
+                        if (attObj != null) {
+                            String attName = attObj.getName();
+    
+                            if (!attName.startsWith("UNKNOWN_POSITIVE_VALUE") && !attName.startsWith("NIL_VALUE")) {
+                                Object tagObj = new IlrReflect().get(subSect, subSect.getXOMClass().getAttribute(attName));
+    
+                                if (tagObj != null) {
+                                    if (tagObj.toString().length() >= 1) {
+                                        arrList.add(attName);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+    
+                return arrList;
+            } catch (Exception e) {
+log.error("exception in servprefTagPopulated :"+e);
+                return null;
+            }
+}
+function void setSupValue()
+{
+com.wisor.brms.asog.xpath.XPathProcessor xpath=new com.wisor.brms.asog.xpath.XPathProcessor(xmlInstance);
+java.util.ArrayList xpathList=xpath.getValue("//ADMIN/SUP");
+if(xpathList == null || xpathList.size()==0){
+	return;
+}
+supValue=(String)xpathList.get(0);
+if(supValue == null)
+{
+	supValue="";
+}
+}
+function boolean svlanthirdOccurenceProhibit(java.util.Vector coll, java.lang.String errorCode, com.wisor.brms.ErrorCodeMsg errorCodeMsg)
+{
+Logger log = new Logger();
+int count = 0;
+log.error("Entering svlanthirdOccurenceProhibit");
+			if (coll == null) 
+			{
+				log.error("Exiting with false");
+                return false;
+            }
+    
+            ArrayList arrList = new ArrayList(); arrList.addAll(coll);
+            ArrayList arrListSub;
+            IlrXmlObject objSect = null;
+			log.error("Befor Try");
+            try {
+            	 if (arrList.size() != 0) 
+            	 for (int i = 0; i < arrList.size(); i++) 
+					{
+						objSect = (IlrXmlObject) arrList.get(i);
+						Object ob = new IlrReflect().get(objSect, objSect.getXOMClass().getAttribute("SVLAN_MAPPINGList"));
+						if(ob != null)
+						{
+							log.error("Entered if vect != null");
+							Vector vect = (Vector) ob;
+							arrListSub = new ArrayList();
+							arrListSub.addAll(vect); 
+							IlrXmlObject objSubSect = null;
+							if (arrListSub.size() == 3)
+							{
+								objSubSect = (IlrXmlObject) arrListSub.get(0);
+								errorCodeMsg.errorCodeErrorMsg( errorCode, objSubSect.getAbsoluteXPath(true)+ "/S_VACT" );
+								count++;
+								
+							}
+						}
+						else
+						{
+							log.error("Ob itself null");
+						}
+                }
+            } 
+			catch (Exception e) 
+			{
+                log.error("Error occurred in svlanthirdOccurenceProhibit " +e);
+                return false;
+            }
+            if(count>=1){
+            	log.error("COUNT :"+count);
+            	return true;
+            }
+            	
+return false;
+						
+}
+function boolean uactValueCheckWithPreviousVersion(java.lang.String uact, java.lang.String sup, java.lang.String pon, java.lang.String ver, java.lang.String ccna, java.lang.String icsc, java.lang.String value, java.lang.String errorcode, com.wisor.brms.ErrorCodeMsg errorCodeMsg, java.util.Vector coll, java.lang.String uref)
+{
+Logger log = new Logger();
+log.debug("entering uactValueCheckWithPreviousVersion method");
+            if (coll == null) {
+            log.debug("exiting with false");
+                return false;
+            }
+             SuplementOrderCheck suplObj =new SuplementOrderCheck(xmlInstance);
+              ArrayList arrList = new ArrayList(); arrList.addAll(coll);                           
+            ArrayList urefList = new ArrayList();
+            ArrayList uactList = new ArrayList();
+            ArrayList pVerList = suplObj.checkCancelledUrefExists(sup, pon, ver, ccna, icsc,
+                    uact, value);
+    
+            if (pVerList == null) {
+            log.debug("exiting with false");
+                return false;
+            }
+    
+            try {
+                if (arrList.size() != 0) {
+                    for (int i = 0; i < arrList.size(); i++) {
+                        IlrXmlObject obj = (IlrXmlObject) arrList.get(i);
+    
+                        Object urefObj = new IlrReflect().get(obj, obj.getXOMClass().getAttribute(uref));
+                        Object uactObj = new IlrReflect().get(obj, obj.getXOMClass().getAttribute(uact));
+    
+                        if (uactObj != null) {
+                            if (uactObj.toString().equalsIgnoreCase(value) && (urefObj != null)) {
+                                urefList.add(urefObj);
+                            }
+                        }
+                    }
+    
+                    for (int i = 0; i < urefList.size(); i++) {
+                        for (int j = 0; j < pVerList.size(); j++) {
+                            if (urefList.get(i).toString().equalsIgnoreCase(pVerList.get(j).toString())) {
+                                int urefval = Integer.parseInt(urefList.get(i).toString());
+                                IlrXmlObject obj = (IlrXmlObject) arrList.get(urefval - 1);
+                                //errorCode.setXpath(obj.getAbsoluteXPath(true));
+                                errorCodeMsg.errorCodeErrorMsg(errorcode, obj.getAbsoluteXPath(true)+ "/" + sup);
+                                log.debug("exiting with true");
+    
+                                return true;
+                            }
+                        }
+                    }
+                }
+         	log.debug("exiting with false");
+                return false;
+            } catch (Exception e) {
+                log.error("Error occurred uactValueCheckWithPreviousVersion : " + e);
+    
+                return false;
+            }
+}
+function boolean unimappingTagsCheckWIthPreviousVer(java.util.Vector coll, java.lang.String sup, java.lang.String pon, java.lang.String ver, java.lang.String ccna, java.lang.String icsc, java.lang.String uact, java.lang.String values, java.lang.String uref, java.lang.String errorcode, com.wisor.brms.ErrorCodeMsg errorCodeMsg)
+{
+Logger log = new Logger();
+log.debug("entering unimappingTagsCheckWIthPreviousVer method");
+            if (coll == null) {
+            log.debug("exiting with false");
+                return false;
+            }
+           SuplementOrderCheck suplObj =new SuplementOrderCheck(xmlInstance);
+            try {
+                ArrayList pUrefValues = suplObj.checkActiveUrefDoesNotExists(sup, pon, ver,
+                        ccna, icsc, uact, values);
+    
+                if (pUrefValues == null) {
+                log.debug("exiting with false");
+                    return false;
+                }
+    
+                  ArrayList unimappingList = new ArrayList(); 
+					unimappingList.addAll(coll);
+
+                ArrayList cUrefValues = new ArrayList();
+                IlrXmlObject obj = null;
+    
+                if (unimappingList.size() != 0) {
+                    for (int i = 0; i < pUrefValues.size(); i++) {
+                        boolean flag = false;
+                        String pUref = pUrefValues.get(i).toString();
+    
+                        for (int j = 0; j < unimappingList.size(); j++) {
+                            obj = (IlrXmlObject) unimappingList.get(j);
+    
+                            Object urefObj = new IlrReflect().get(obj, obj.getXOMClass().getAttribute(uref));
+    
+                            if (urefObj != null) {
+                                String cUref = urefObj.toString();
+    
+                                if (cUref.equalsIgnoreCase(pUref)) {
+                                    String message = "ALL  FIELDS OF THE UNI_MAPPING SECTION FOR ACTIVE EVC:UREF = " +
+                                        pUref + " CANNOT BE ALTERED";
+                                   // errorCode.setXpath(obj.getAbsoluteXPath(true));
+                                    //errorCode.setMessage(message);
+                                    flag = true;
+                                    log.debug("exiting with true");
+    
+                                    return true;
+                                }
+                            }
+                        }
+    
+                        if (flag == false) {
+                            String message = "ALL  FIELDS OF THE UNI_MAPPING SECTION FOR ACTIVE EVC:UREF = " + pUref +
+                                " CANNOT BE ALTERED";
+                            //errorCode.setXpath(obj.getAbsoluteXPath(true));
+                            //errorCode.setMessage(message);
+                            errorCodeMsg.errorCodeErrorMsg(errorcode, obj.getAbsoluteXPath(true)+ "/" + sup);
+    				log.debug("exiting with true");
+                            return true;
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                log.error("Error occurred unimappingTagsCheckWIthPreviousVer : " + e);
+    
+                return false;
+            }
+          log.debug("exiting with false");
+            return false;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

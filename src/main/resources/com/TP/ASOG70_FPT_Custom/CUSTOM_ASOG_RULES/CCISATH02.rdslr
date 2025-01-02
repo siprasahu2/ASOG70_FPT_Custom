@@ -1,0 +1,76 @@
+package com.TP.ASOG70_FPT_Custom.CUSTOM_ASOG_RULES;
+import com.wisor.brms.asog.xpath.Occurence;
+import com.wisor.brms.asog.LengthCheck;
+import com.wisor.brms.asog.dao.ASOGTABLE;
+import com.wisor.brms.asog.DatatypeCheck;
+import com.wisor.brms.asog.Equals;
+import com.wisor.brms.asog.RangeOfValues;
+import com.wisor.brms.asog.Required;
+import com.wisor.brms.asog.TimeFormatCheck;
+import com.wisor.brms.asog.Populated;
+import com.wisor.brms.asog.DateFormatCheck;
+import com.wisor.brms.asog.Position;
+import com.wisor.brms.asog.Contains;
+import com.wisor.brms.asog.dao.SuplementOrderCheck;
+import com.wisor.brms.asog.SvcType;
+import com.wisor.brms.asog.DateCheck;
+import com.wisor.brms.asog.CapitalLetterCheck;
+import com.wisor.brms.asog.SpecialFormat;
+import com.wisor.brms.asog.engine.XpathLookup;
+import com.wisor.brms.asog.isValidValue;
+import com.wisor.brms.asog.ValidValueCheck;
+import com.wisor.brms.asog.IntervalDurationMatcher;
+import com.wisor.brms.asog.xpath.Prohibited;
+import com.wisor.brms.asog.SpaceCheck;
+import com.wisor.brms.asog.ReqTypeAct;
+import com.synchronoss.brms.dao.BrmsKeyValue;
+import com.wisor.brms.asog.CommaSeparatedSpace;
+import com.wisor.brms.asog.dao.HOLIDAY;
+import com.wisor.brms.asog.TNFormat;
+import com.wisor.brms.asog.ThoroughFareHelper;
+import com.wisor.brms.asog.DisplayMessage;
+import com.wisor.brms.asog.xpath.Unique;
+import java.util.Vector;
+import com.wisor.brms.logging.Logger;
+import java.util.ArrayList;
+import ilog.rules.xml.IlrXmlObject;
+import ilog.rules.factory.IlrReflect;
+import com.wisor.brms.ErrorCodeMsg;
+import ilog.rules.bom.IlrAttribute;
+import java.util.Iterator;
+import java.util.*;
+import com.wisor.brms.asog.CustSegementValidator;
+import ilog.rules.xml.binding.IlrXmlDefaultDataDriver;
+import java.io.StringWriter;
+import java.util.Collection;
+import java.util.List;
+import ilog.rules.bom.IlrClass;
+import ilog.rules.bom.dynamic.IlrDynamicClass;
+import java.util.Enumeration;
+import java.io.StringReader;
+import ilog.rules.xml.IlrXmlErrorException;
+import ilog.rules.xml.IlrXmlError;
+import com.wisor.common.brms.exception.BRMSValidationException;
+import ilog.rules.data.IlrError;
+import ilog.rules.xml.runtime.IlrXmlRtException;
+import com.wisor.brms.ErrorResponse;
+import com.synchronoss.ruleserver.core.xpath.XOMContainerBean;
+import com.synchronoss.ruleserver.core.xpath.XOMAccessBean;
+import java.util.*;
+rule "CCISATH02" dialect "mvel" ruleflow-group "CUSTOM_ASOG_RULES"
+enabled true
+
+when
+xcb object
+Evaluate 
+Start Brace
+the "//Address_ComplexType/SATH" is populated 
+AND
+ the "//ADMIN/ICSC" is_equal_to_values "RS02,ET02,IC90,CC05,CC85,EC10,ET02,EV10,NP05,PT30,FB01,LF10" 
+AND
+ the "//Address_ComplexType/SATH" is_not_equal_to_values "ALY,ANX,APT,ARC,AVE,BCH,BG,BLDG,BLF,BLVD,BND,BRG,BR,BSMT,BTM,BYP,BYU,CIR,CLB,CLFS,CORS,COR,CPE,CP,CRES,CRK,CSWY,CTR,CTS,CT,CV,CYN,DEPT,DL,DM,DR,DV,EXPY,EST,EXT,FLDS,FLD,FLS,FL,FRD,FRG,FRK,FRNT,FRST,FRY,FTLT,FT,FWY,GDNS,GDN,GLN,GRN,GRV,GTWY,HBR,HLS,HL,HNGR,HOLW,HTS,HVN,HWY,INLT,ISS,IS,JCT,KNL,KY,LBBY,LCKS,LCK,LDG,LF,LGT,LKS,LK,LNG,LN,LOWR,MALL,MDWS,MDW,ML,MNR,MSN,MTN,MT,NCK,OFC,ORCH,PH,PIKE,PKWY,PLN,PLZ,PL,PNES,PNE,PRT,PR,PT,RADL,RDG,RDPS,RD,RIV,RM,RNCH,ROW,RPD,RST,SHLS,SHL,SHRS,SHR,SMT,SPC,SPGS,SPG,SQ,STA,STE,STRA,STRM,ST,TER,TPKE,TRAK,TRCE,TRFY,TRLR,TRL,TUNL,UN,UPPR,VIA,VIS,VLG,VLY,VL,VW,WAY,WLS,WL,XING,N/A,PARK,LOOP,CURV,THRF" 
+End Brace
+
+then
+the error code "CCISATH02" the error message "Please use a US Postal Throughfare value." for the field "/SATH/ADDR"
+end
